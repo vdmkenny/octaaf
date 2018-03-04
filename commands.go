@@ -98,7 +98,14 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
 	resp, _ := client.Do(req)
 
-	doc, _ := goquery.NewDocumentFromReader(resp.Body)
+	doc, parseErr := goquery.NewDocumentFromReader(resp.Body)
+
+	if parseErr != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "Something went wrong while computing this query : `"+message.CommandArguments()+"`")
+		msg.ReplyToMessageID = message.MessageID
+		msg.ParseMode = "markdown"
+		return
+	}
 
 	var images []string
 
@@ -113,9 +120,18 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	for _, url := range images {
 
-		res, _ := http.Get(url)
+		res, err := http.Get(url)
 
-		content, _ := ioutil.ReadAll(res.Body)
+		if err != nil {
+			continue
+		}
+
+		content, readErr := ioutil.ReadAll(res.Body)
+
+		if readErr != nil {
+			continue
+		}
+
 		bytes := tgbotapi.FileBytes{Name: "image.jpg", Bytes: content}
 		msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
 

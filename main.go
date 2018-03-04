@@ -65,9 +65,6 @@ func main() {
 func cronJobs(bot *tgbotapi.BotAPI) {
 	gocron.Every(1).Day().At("13:37").Do(sendGlobal, bot, "1337")
 	gocron.Every(1).Day().At("16:20").Do(sendGlobal, bot, "420")
-	gocron.Every(1).Day().At("10:10").Do(sendGlobal, bot, "Gerben moet Bart nog 2 orvals.")
-	gocron.Every(1).Day().At("11:11").Do(sendGlobal, bot, "Gerben moet Bart nog 2 orvals.")
-	gocron.Every(1).Day().At("12:12").Do(sendGlobal, bot, "Gerben moet Bart nog 2 orvals.")
 
 	<-gocron.Start()
 }
