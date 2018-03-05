@@ -50,6 +50,8 @@ func main() {
 				go sendBodegem(bot, update.Message)
 			case "img", "img_sfw":
 				go sendImage(bot, update.Message)
+			case "stallman":
+				go sendStallman(bot, update.Message)
 			}
 		}
 

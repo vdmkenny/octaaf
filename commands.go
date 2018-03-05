@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -78,6 +81,72 @@ func sendBodegem(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	bot.Send(msg)
 }
 
+func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	var url = "https://stallman.org/photos/rms-working/"
+
+	doc, err := goquery.NewDocument(url)
+
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman went bork? 🤔🤔🤔🤔")
+		msg.ReplyToMessageID = message.MessageID
+		bot.Send(msg)
+		return
+	}
+
+	var pages []string
+
+	doc.Find("img").Each(func(i int, token *goquery.Selection) {
+		url, exists := token.Parent().Attr("href")
+		if exists {
+			pages = append(pages, url)
+		}
+	})
+
+	if len(pages) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "No stallman found... 🤔🤔🤔🤔")
+		msg.ReplyToMessageID = message.MessageID
+		bot.Send(msg)
+		return
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	roll := rand.Intn(len(pages))
+
+	log.Printf("Roll: %v", pages[roll])
+
+	doc, err = goquery.NewDocument(url + pages[roll])
+
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman went bork? 🤔🤔🤔🤔")
+		msg.ReplyToMessageID = message.MessageID
+		bot.Send(msg)
+		return
+	}
+
+	image, _ := doc.Find("img").First().Parent().Attr("href")
+
+	log.Printf("Image: %v", image)
+	log.Printf("Url: %v", url+path.Base(image))
+
+	res, _ := http.Get(url + path.Base(image))
+
+	content, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman parser error... 🤔🤔🤔🤔")
+		msg.ReplyToMessageID = message.MessageID
+		bot.Send(msg)
+		return
+	}
+
+	bytes := tgbotapi.FileBytes{Name: "stally.jpg", Bytes: content}
+	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
+
+	msg.Caption = message.CommandArguments()
+	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
 func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if len(message.CommandArguments()) == 0 {
@@ -94,16 +163,28 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	}
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", query, nil)
+	req, err := http.NewRequest("GET", query, nil)
+
+	if err != nil {
+		msg := getMessageConfig(message, "Uh oh, server error 🤔")
+		bot.Send(msg)
+		return
+	}
+
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
-	resp, _ := client.Do(req)
+	resp, err := client.Do(req)
 
-	doc, parseErr := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		msg := getMessageConfig(message, fmt.Sprintf("Something went wrong while searching this query: `%v`", message.CommandArguments()))
+		bot.Send(msg)
+		return
+	}
 
-	if parseErr != nil {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Something went wrong while computing this query : `"+message.CommandArguments()+"`")
-		msg.ReplyToMessageID = message.MessageID
-		msg.ParseMode = "markdown"
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+
+	if err != nil {
+		msg := getMessageConfig(message, fmt.Sprintf("Something went wrong while parsing this query response: `%v`", message.CommandArguments()))
+		bot.Send(msg)
 		return
 	}
 
@@ -118,17 +199,22 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 		}
 	})
 
+	timeout := time.Duration(2 * time.Second)
+	client = &http.Client{
+		Timeout: timeout,
+	}
+
 	for _, url := range images {
 
-		res, err := http.Get(url)
+		res, err := client.Get(url)
 
 		if err != nil {
 			continue
 		}
 
-		content, readErr := ioutil.ReadAll(res.Body)
+		content, err := ioutil.ReadAll(res.Body)
 
-		if readErr != nil {
+		if err != nil {
 			continue
 		}
 
@@ -148,4 +234,10 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg.ReplyToMessageID = message.MessageID
 	msg.ParseMode = "markdown"
 	bot.Send(msg)
+}
+
+func getMessageConfig(message *tgbotapi.Message, text string) tgbotapi.MessageConfig {
+	msg := tgbotapi.NewMessage(message.Chat.ID, text)
+	msg.ReplyToMessageID = message.MessageID
+	return msg
 }
