@@ -52,6 +52,10 @@ func main() {
 				go sendImage(bot, update.Message)
 			case "stallman":
 				go sendStallman(bot, update.Message)
+			case "avatar":
+				go sendAvatar(bot, update.Message)
+			case "search", "search_nsfw":
+				go search(bot, update.Message)
 			}
 		}
 

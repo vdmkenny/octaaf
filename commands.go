@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/buger/jsonparser"
+	"github.com/o1egl/govatar"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
@@ -78,6 +81,63 @@ func m8Ball(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 func sendBodegem(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewLocation(message.Chat.ID, 50.8614773, 4.211304)
 	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
+func sendAvatar(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	img, err := govatar.GenerateFromUsername(govatar.MALE, message.From.UserName)
+
+	if err != nil {
+		log.Printf("Error: %v", err)
+	}
+
+	buf := new(bytes.Buffer)
+	png.Encode(buf, img)
+
+	bytes := tgbotapi.FileBytes{Name: "avatar.png", Bytes: buf.Bytes()}
+	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
+	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
+func search(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	if len(message.CommandArguments()) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "What do you expect me to do? 🤔🤔🤔🤔")
+		msg.ReplyToMessageID = message.MessageID
+		bot.Send(msg)
+		return
+	}
+
+	// Basic url that disables ads
+	url := "https://duckduckgo.com/lite?k1=-1&q=" + message.CommandArguments()
+
+	if message.Command() == "search_nsfw" {
+		url += "&kp=-2"
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		msg := getMessageConfig(message, "Uh oh, server error 🤔")
+		bot.Send(msg)
+		return
+	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
+	resp, _ := client.Do(req)
+
+	doc, _ := goquery.NewDocumentFromReader(resp.Body)
+
+	url, found := doc.Find(".result-link").First().Attr("href")
+
+	if found {
+		msg := getMessageConfig(message, url)
+		bot.Send(msg)
+		return
+	}
+
+	msg := getMessageConfig(message, "I found nothing 😱😱😱")
 	bot.Send(msg)
 }
 
