@@ -56,11 +56,17 @@ func main() {
 				go sendAvatar(bot, update.Message)
 			case "search", "search_nsfw":
 				go search(bot, update.Message)
+			case "where":
+				go where(bot, update.Message)
+			case "count":
+				go count(bot, update.Message)
+			case "weather":
+				go weather(bot, update.Message)
 			}
 		}
 
 		if update.Message.MessageID%100000 == 0 {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprint("💯💯💯💯 YOU HAVE MESSAGE %i 💯💯💯💯", update.Message.MessageID))
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("💯💯💯💯 YOU HAVE MESSAGE %v 💯💯💯💯", update.Message.MessageID))
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ParseMode = "markdown"
 			bot.Send(msg)

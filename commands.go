@@ -13,9 +13,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/araddon/dateparse"
+	humanize "github.com/dustin/go-humanize"
+
 	"github.com/PuerkitoBio/goquery"
-	"github.com/buger/jsonparser"
 	"github.com/o1egl/govatar"
+	"github.com/tidwall/gjson"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
@@ -38,6 +41,12 @@ func sendRoll(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	}
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, roll)
+	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
+func count(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("%v", message.MessageID))
 	msg.ReplyToMessageID = message.MessageID
 	bot.Send(msg)
 }
@@ -81,6 +90,65 @@ func m8Ball(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 func sendBodegem(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewLocation(message.Chat.ID, 50.8614773, 4.211304)
 	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
+func where(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
+
+	location, found := getLocation(argument)
+
+	if !found {
+		msg := getMessageConfig(message, "This place does not exist 🙈🙈🙈🤔🤔🤔")
+		bot.Send(msg)
+		return
+	}
+
+	msg := tgbotapi.NewLocation(message.Chat.ID, location.lat, location.lng)
+	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
+func weather(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
+
+	location, found := getLocation(argument)
+
+	if !found {
+		msg := getMessageConfig(message, "No data found 🙈🙈🙈🤔🤔🤔")
+		bot.Send(msg)
+		return
+	}
+
+	resp, _ := http.Get(fmt.Sprintf("https://graphdata.buienradar.nl/forecast/json/?lat=%v&lon=%v", location.lat, location.lng))
+	body, _ := ioutil.ReadAll(resp.Body)
+	weatherJSON := string(body)
+
+	reply := "No weather data found."
+
+	forecasts := gjson.Get(weatherJSON, "forecasts").Array()
+
+	if len(forecasts) > 0 {
+		reply = "It's not going to rain in " + message.CommandArguments()
+	}
+
+	for key, forecast := range forecasts {
+		if forecast.Get("precipation").Num > 0 {
+			if key == 0 {
+				reply = "It is now raining in " + message.CommandArguments()
+			} else {
+				rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
+				if err != nil {
+					reply = "Expected rain from " + forecast.Get("datetime").String()
+				} else {
+					reply = "Expected rain " + humanize.Time(rain)
+				}
+			}
+			break
+		}
+	}
+
+	msg := getMessageConfig(message, "*Weather:* "+reply)
 	bot.Send(msg)
 }
 
@@ -208,15 +276,14 @@ func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 }
 
 func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-
-	if len(message.CommandArguments()) == 0 {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "What do you expect me to do? 🤔🤔🤔🤔")
-		msg.ReplyToMessageID = message.MessageID
+	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
+	if len(argument) == 0 {
+		msg := getMessageConfig(message, fmt.Sprintf("What am I to do, @%v? 🤔🤔🤔🤔", message.From.UserName))
 		bot.Send(msg)
 		return
 	}
 
-	query := "http://images.google.com/search?tbm=isch&q=" + strings.Replace(message.CommandArguments(), " ", "+", -1)
+	query := "http://images.google.com/search?tbm=isch&q=" + argument
 
 	if message.Command() == "img_sfw" {
 		query += "&safe=on"
@@ -252,9 +319,9 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	doc.Find(".rg_di .rg_meta").Each(func(i int, token *goquery.Selection) {
 		imageJSON := token.Text()
-		imageURL, err := jsonparser.GetString([]byte(imageJSON), "ou")
+		imageURL := gjson.Get(imageJSON, "ou").String()
 
-		if err == nil {
+		if len(imageURL) > 0 {
 			images = append(images, imageURL)
 		}
 	})
@@ -290,14 +357,6 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 		}
 	}
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, "I did not find images for the query: `"+message.CommandArguments()+"`")
-	msg.ReplyToMessageID = message.MessageID
-	msg.ParseMode = "markdown"
+	msg := getMessageConfig(message, "I did not find images for the query: `"+message.CommandArguments()+"`")
 	bot.Send(msg)
-}
-
-func getMessageConfig(message *tgbotapi.Message, text string) tgbotapi.MessageConfig {
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	msg.ReplyToMessageID = message.MessageID
-	return msg
 }
