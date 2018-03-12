@@ -127,22 +127,32 @@ func weather(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	reply := "No weather data found."
 
 	forecasts := gjson.Get(weatherJSON, "forecasts").Array()
+	raining := false
 
 	if len(forecasts) > 0 {
-		reply = "It's not going to rain in " + message.CommandArguments()
+		reply = "☀️☀️☀️ It's not going to rain in " + message.CommandArguments()
+		if forecasts[0].Get("precipation").Num > 0 {
+			reply = "🌧🌧🌧 It's now raining in " + message.CommandArguments()
+			raining = true
+		}
 	}
 
-	for key, forecast := range forecasts {
-		if forecast.Get("precipation").Num > 0 {
-			if key == 0 {
-				reply = "It is now raining in " + message.CommandArguments()
+	for _, forecast := range forecasts {
+		if raining && forecast.Get("precipation").Num == 0 {
+			reply += ", but it's expected to stop "
+			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
+			if err != nil {
+				reply += " in " + forecast.Get("datetime").String()
 			} else {
-				rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
-				if err != nil {
-					reply = "Expected rain from " + forecast.Get("datetime").String()
-				} else {
-					reply = "Expected rain " + humanize.Time(rain)
-				}
+				reply += humanize.Time(rain)
+			}
+			break
+		} else if forecast.Get("precipation").Num > 0 {
+			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
+			if err != nil {
+				reply = "🌦🌦🌦 Expected rain from " + forecast.Get("datetime").String()
+			} else {
+				reply = "🌦🌦🌦 Expected rain " + humanize.Time(rain)
 			}
 			break
 		}
