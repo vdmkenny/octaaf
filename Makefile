@@ -8,10 +8,10 @@ SHELL = /bin/sh
 
 srcdir = .
 
-NAME  = octaaf
+NAME  = "octaaf"
 DESCRIPTION = "A Go Telegram bot"
-VERSION = 0.1.0
-ARCH = x86_64
+VERSION = "0.1.0"
+ARCH = "x86_64"
 
 all: compile
 
@@ -35,9 +35,9 @@ package:
 	fpm -s dir -t rpm \
 		--name $(NAME) \
 		--description $(DESCRIPTION) \
-		--version"$(VERSION) \
-		--architecture"$(ARCH) \
-		--iteration"$(BUILD_NO) \
+		--version $(VERSION) \
+		--architecture $(ARCH) \
+		--iteration $(BUILD_NO) \
 		--force \
 		--config-files /usr/lib/systemd/system/octaaf.service \
 		--config-files /opt/octaaf/.env \
