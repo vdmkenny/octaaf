@@ -19,14 +19,15 @@ pipeline {
 
         stage('Package') {
             steps {
-                sh "fpm -s dir -t rpm \\
+                sh '''fpm -s dir -t rpm \\
                         --name ${NAME} \\
                         --description ${DESCRIPTION} \\
                         --version ${VERSION} \\
                         --architecture ${ARCH} \\
                         --chdir ${TMPDIR} \\
                         --iteration ${env.BUILD_NUMBER} \\
-                        .; \\"
+                        .; \\
+                '''
             }
         }
 
