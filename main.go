@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/gobuffalo/pop"
 	"github.com/joho/godotenv"
-	"github.com/markbates/pop"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
