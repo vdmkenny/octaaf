@@ -13,9 +13,11 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
-# Environment variables
-.env
+# Config
+config/.env
+config/database.yml
 
 # Octaaf binary
 octaaf
 Octaaf
+

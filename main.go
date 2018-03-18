@@ -5,17 +5,23 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"time"
 
-	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
+	"github.com/markbates/pop"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
 func main() {
-	err := godotenv.Load()
+	err := godotenv.Load("config/.env")
+
 	if err != nil {
 		log.Fatal("Error loading .env file")
+	}
+
+	tx, e := pop.Connect("development")
+
+	if e != nil {
+		log.Panic(e)
 	}
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_API_TOKEN"))
@@ -24,7 +30,10 @@ func main() {
 		log.Panic(err)
 	}
 
-	go cronJobs(bot)
+	kaliID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
+	kaliCount := 0
+
+	go initCrons(bot, tx, &kaliCount)
 
 	bot.Debug = false
 
@@ -71,30 +80,9 @@ func main() {
 			msg.ParseMode = "markdown"
 			bot.Send(msg)
 		}
-	}
-}
 
-func cronJobs(bot *tgbotapi.BotAPI) {
-	gocron.Every(1).Day().At("13:37").Do(sendGlobal, bot, "1337")
-	gocron.Every(1).Day().At("16:20").Do(sendGlobal, bot, "420")
-
-	<-gocron.Start()
-}
-
-func sendGlobal(bot *tgbotapi.BotAPI, message string) {
-	// Wait 1.5 seconds because Telegram has bad NTP
-	time.Sleep(1500)
-
-	telegramRoomID, e := strconv.ParseInt("-1001090867629", 10, 64)
-
-	if e != nil {
-		log.Println("Invalid Telegram room id, not sending global messages.")
-	}
-
-	msg := tgbotapi.NewMessage(telegramRoomID, message)
-	_, err := bot.Send(msg)
-
-	if err != nil {
-		log.Printf("Error while sending '%s': %s", message, err)
+		if update.Message.Chat.ID == kaliID {
+			kaliCount = update.Message.MessageID
+		}
 	}
 }

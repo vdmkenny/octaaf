@@ -2,8 +2,11 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/tidwall/gjson"
 	"gopkg.in/telegram-bot-api.v4"
@@ -35,4 +38,22 @@ func getMessageConfig(message *tgbotapi.Message, text string) tgbotapi.MessageCo
 	msg.ReplyToMessageID = message.MessageID
 	msg.ParseMode = "markdown"
 	return msg
+}
+
+func sendGlobal(bot *tgbotapi.BotAPI, message string) {
+	// Wait 1.5 seconds because Telegram has bad NTP
+	time.Sleep(1500)
+
+	telegramRoomID, e := strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
+
+	if e != nil {
+		log.Println("Invalid Telegram room id, not sending global messages.")
+	}
+
+	msg := tgbotapi.NewMessage(telegramRoomID, message)
+	_, err := bot.Send(msg)
+
+	if err != nil {
+		log.Printf("Error while sending '%s': %s", message, err)
+	}
 }
