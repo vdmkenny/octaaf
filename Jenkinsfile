@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         REPO_SERVER = 'repo.youkebox.be'
-        REPO_PATH   = "/var/vhosts/repo/${BUILD}"
+        REPO_PATH   = "/var/vhosts/repo/${env.GIT_BRANCH}"
         NAME        = 'octaaf'
         VERSION     = '0.1.0'
         DESCRIPTION = 'A Go Telegram bot'
@@ -25,7 +25,7 @@ pipeline {
                         --version ${VERSION} \\
                         --architecture ${ARCH} \\
                         --chdir ${TMPDIR} \\
-                        --iteration ${env.BUILD_NUMBER}
+                        --iteration ${env.BUILD_NUMBER} \\
                         .; \\"
             }
         }
