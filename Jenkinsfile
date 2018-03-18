@@ -11,23 +11,15 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+       stage('Build') {
             steps {
-                sh 'docker run --rm -v "$PWD":/go/src/octaaf -w /go/src/octaaf golang:1.10 /bin/bash -c "go get -v && go build -v"'
+                sh 'make'
             }
         }
 
         stage('Package') {
             steps {
-                sh '''fpm -s dir -t rpm \\
-                        --name ${NAME} \\
-                        --description ${DESCRIPTION} \\
-                        --version ${VERSION} \\
-                        --architecture ${ARCH} \\
-                        --chdir ${TMPDIR} \\
-                        --iteration ${env.BUILD_NUMBER} \\
-                        .; \\
-                '''
+                sh "make package --environment-overrides BUILD_NO=${env.BUILD_NUMBER}"
             }
         }
 
