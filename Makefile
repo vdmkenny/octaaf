@@ -25,7 +25,7 @@ TARGET := $(TMPDIR)/opt/octaaf/
 SYSTEM := $(TMPDIR)/usr/lib/systemd/system/
 
 package:
-	mkdir -p $(TARGET)/bin
+	mkdir -p $(TARGET)
 	mkdir -p $(SYSTEM)
 
 	cp ./octaaf $(TARGET)
@@ -33,15 +33,15 @@ package:
 	cp .env $(TARGET)
 	
 	fpm -s dir -t rpm \
-		--name "$(NAME)" \
-		--description "$(DESCRIPTION)" \
-		--version "$(VERSION)" \
-		--architecture "$(ARCH)" \
-		--iteration "$(BUILD_NO)" \
+		--name $(NAME) \
+		--description $(DESCRIPTION) \
+		--version"$(VERSION) \
+		--architecture"$(ARCH) \
+		--iteration"$(BUILD_NO) \
 		--force \
 		--config-files /usr/lib/systemd/system/octaaf.service \
 		--config-files /opt/octaaf/.env \
-		--chdir "$(TMPDIR)" \
+		--chdir $(TMPDIR) \
 		.; \
 	
 	rm -R $(TMPDIR)
