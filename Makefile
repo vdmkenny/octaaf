@@ -30,7 +30,7 @@ package:
 
 	cp ./octaaf $(TARGET)
 	cp ./octaaf.service $(SYSTEM)/octaaf.service
-	cp .env $(TARGET)
+	cp -r ./config $(TARGET)
 	
 	fpm -s dir -t rpm \
 		--name "$(NAME)" \
@@ -40,7 +40,7 @@ package:
 		--iteration $(BUILD_NO) \
 		--force \
 		--config-files /usr/lib/systemd/system/octaaf.service \
-		--config-files /opt/octaaf/.env \
+		--config-files /opt/octaaf/config/.env \
 		--chdir $(TMPDIR) \
 		.; \
 	
