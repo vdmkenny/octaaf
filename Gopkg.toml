@@ -1,6 +1,6 @@
 # Gopkg.toml example
 #
-# Refer to https://golang.github.io/dep/docs/Gopkg.toml.html
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
 # for detailed Gopkg.toml documentation.
 #
 # required = ["github.com/user/thing/cmd/thing"]
@@ -34,12 +34,20 @@
   name = "github.com/araddon/dateparse"
 
 [[constraint]]
+  branch = "development"
+  name = "github.com/bartwillems/octaaf"
+
+[[constraint]]
   branch = "master"
   name = "github.com/dustin/go-humanize"
 
 [[constraint]]
   name = "github.com/gobuffalo/pop"
   version = "4.2.2"
+
+[[constraint]]
+  name = "github.com/gobuffalo/uuid"
+  version = "2.0.0"
 
 [[constraint]]
   name = "github.com/gobuffalo/validate"
@@ -56,10 +64,6 @@
 [[constraint]]
   name = "github.com/o1egl/govatar"
   version = "0.2.0"
-
-[[constraint]]
-  name = "github.com/satori/go.uuid"
-  version = "1.2.0"
 
 [[constraint]]
   name = "github.com/tidwall/gjson"
