@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/bartwillems/octaaf/models"
 	"github.com/gobuffalo/pop"
-	"github.com/octaaf/models"
 
 	"github.com/jasonlvhit/gocron"
 	"gopkg.in/telegram-bot-api.v4"
