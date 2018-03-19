@@ -19,7 +19,7 @@ func initCrons(bot *tgbotapi.BotAPI, tx *pop.Connection, kaliCountRef *int) {
 	<-gocron.Start()
 }
 
-func setKaliCount(tx *pop.Connection, kaliCount *int64) {
+func setKaliCount(tx *pop.Connection, kaliCount *int) {
 	stat := models.KaliStat{MessageCount: *kaliCount, Date: time.Now()}
 
 	_, err := tx.ValidateAndCreate(&stat)

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/gobuffalo/pop"
+	"github.com/gobuffalo/uuid"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
-	"github.com/satori/go.uuid"
 )
 
 // KaliStat contains a date and messagecount
@@ -15,7 +15,7 @@ type KaliStat struct {
 	ID           uuid.UUID `json:"id" db:"id"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
-	MessageCount int64     `json:"message_count" db:"message_count"`
+	MessageCount int       `json:"message_count" db:"message_count"`
 	Date         time.Time `json:"date" db:"date"`
 }
 
