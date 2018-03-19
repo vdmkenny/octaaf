@@ -18,9 +18,9 @@ all: compile
 compile:
 	docker run --rm -v "$(shell pwd)":/go/src/octaaf \
 		-w /go/src/octaaf golang:1.10 \
-		/bin/bash -c "go get -u github.com/golang/dep/cmd/dep && \
-					  dep ensure && \
-					  go build -v && \
+		/bin/bash -c "go get -u github.com/golang/dep/cmd/dep ; \
+					  dep ensure ; \
+					  go build -v ; \
 					  rm -rf vendor/"
 	strip octaaf
 
