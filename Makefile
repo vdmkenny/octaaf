@@ -8,7 +8,7 @@ SHELL = /bin/sh
 
 srcdir = .
 
-NAME  = octaaf
+NAME = octaaf
 DESCRIPTION = A Go Telegram bot
 VERSION = 0.1.0
 ARCH = x86_64

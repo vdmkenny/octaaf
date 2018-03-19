@@ -18,7 +18,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	tx, e := pop.Connect("development")
+	tx, e := pop.Connect(os.Getenv("ENVIRONMENT"))
 
 	if e != nil {
 		log.Panic(e)
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	kaliID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
-	kaliCount := 0
+	var kaliCount int = 0
 
 	go initCrons(bot, tx, &kaliCount)
 
@@ -45,8 +45,13 @@ func main() {
 	updates, err := bot.GetUpdatesChan(u)
 
 	for update := range updates {
+
 		if update.Message == nil {
 			continue
+		}
+
+		if update.Message.Chat.ID == kaliID {
+			kaliCount = update.Message.MessageID
 		}
 
 		if update.Message.IsCommand() {
@@ -79,10 +84,6 @@ func main() {
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ParseMode = "markdown"
 			bot.Send(msg)
-		}
-
-		if update.Message.Chat.ID == kaliID {
-			kaliCount = update.Message.MessageID
 		}
 	}
 }
