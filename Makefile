@@ -16,8 +16,8 @@ ARCH = x86_64
 all: compile
 
 compile:
-	cp config/.env.dist config/.env
-	cp config/database.yml.dist config/database.yml
+	mv config/.env.dist config/.env
+	mv config/database.yml.dist config/database.yml
 	docker run --rm -v "$(shell pwd)":/go/src/octaaf \
 		-w /go/src/octaaf golang:1.10 \
 		/bin/bash -c "go get -u github.com/golang/dep/cmd/dep && dep ensure && go build -v"
