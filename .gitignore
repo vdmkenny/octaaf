@@ -17,6 +17,9 @@
 config/.env
 config/database.yml
 
+# Vendor
+vendor
+
 # Octaaf binary
 octaaf
 Octaaf
