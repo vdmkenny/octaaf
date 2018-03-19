@@ -16,24 +16,27 @@ ARCH = x86_64
 all: compile
 
 compile:
-	mv config/.env.dist config/.env
-	mv config/database.yml.dist config/database.yml
 	docker run --rm -v "$(shell pwd)":/go/src/octaaf \
 		-w /go/src/octaaf golang:1.10 \
-		/bin/bash -c "go get -u github.com/golang/dep/cmd/dep && dep ensure && go build -v"
+		/bin/bash -c "go get -u github.com/golang/dep/cmd/dep && \
+					  dep ensure && \
+					  go build -v && \
+					  rm -rf vendor/"
 	strip octaaf
 
 TMPDIR := $(shell mktemp -d)
-TARGET := $(TMPDIR)/opt/octaaf/
+TARGET := $(TMPDIR)/opt/octaaf
+CONFIG := $(TARGET)/config
 SYSTEM := $(TMPDIR)/usr/lib/systemd/system/
 
 package:
-	mkdir -p $(TARGET)
+	mkdir -p $(CONFIG)
 	mkdir -p $(SYSTEM)
 
-	cp ./octaaf $(TARGET)
+	cp ./octaaf $(TARGET)/
 	cp ./octaaf.service $(SYSTEM)/octaaf.service
-	cp -r ./config $(TARGET)
+	cp ./config/.env.dist $(CONFIG)/.env
+	cp ./config/database.yml.dist $(CONFIG)/database.yml
 	
 	fpm -s dir -t rpm \
 		--name "$(NAME)" \
