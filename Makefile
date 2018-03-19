@@ -16,12 +16,10 @@ ARCH = x86_64
 all: compile
 
 compile:
+	docker build -t octaaf .
 	docker run --rm -v "$(shell pwd)":/go/src/octaaf \
-		-w /go/src/octaaf golang:1.10 \
-		/bin/bash -c "go get -u github.com/golang/dep/cmd/dep ; \
-					  dep ensure ; \
-					  go build -v ; \
-					  rm -rf vendor/"
+		-w /go/src/octaaf octaaf:latest \
+		/bin/ash -c "dep ensure && go build -v"
 	strip octaaf
 
 TMPDIR := $(shell mktemp -d)
