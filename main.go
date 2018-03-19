@@ -31,7 +31,7 @@ func main() {
 	}
 
 	kaliID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
-	var kaliCount int = 0
+	var kaliCount int
 
 	go initCrons(bot, tx, &kaliCount)
 
