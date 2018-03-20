@@ -22,7 +22,6 @@ compile:
 		-w /go/src/octaaf octaaf:latest \
 		/bin/ash -c "dep ensure && go build -v"
 	strip octaaf
-	sudo rm -rf vendor
 
 TMPDIR := $(shell mktemp -d)
 TARGET := $(TMPDIR)/opt/octaaf
