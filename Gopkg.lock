@@ -75,7 +75,10 @@
 
 [[projects]]
   name = "github.com/gobuffalo/validate"
-  packages = ["."]
+  packages = [
+    ".",
+    "validators"
+  ]
   revision = "42d8db6e06e617cdedcc7a849d6690a2cb5a8d28"
   version = "v2.0.0"
 
@@ -113,7 +116,6 @@
   branch = "master"
   name = "github.com/markbates/going"
   packages = [
-    "clam",
     "defaults",
     "randx",
     "wait"
@@ -125,34 +127,6 @@
   name = "github.com/markbates/inflect"
   packages = ["."]
   revision = "b5c853d089b86134926274bc7a98496fee5e1d6b"
-
-[[projects]]
-  branch = "cobra"
-  name = "github.com/markbates/pop"
-  packages = [
-    ".",
-    "columns"
-  ]
-  revision = "bb35c49da55bc73c51dedfe007c860db7693cac6"
-
-[[projects]]
-  name = "github.com/markbates/validate"
-  packages = [
-    ".",
-    "validators"
-  ]
-  revision = "cd8cc34c703420d6b084fbbfd5085e8e71c5b830"
-  version = "v1.0.0"
-
-[[projects]]
-  name = "github.com/mattes/migrate"
-  packages = [
-    "driver/mysql",
-    "driver/postgres",
-    "driver/sqlite3"
-  ]
-  revision = "afc973c4e5a6b746217c2d3950fcd110ed1ba349"
-  version = "v1.3.2"
 
 [[projects]]
   name = "github.com/mattn/anko"
@@ -197,12 +171,6 @@
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
-
-[[projects]]
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -251,16 +219,6 @@
   revision = "7ceb54c8418b8f9cdf0177b511d5cbb06e9fae39"
 
 [[projects]]
-  name = "gopkg.in/mattes/migrate.v1"
-  packages = [
-    "driver",
-    "file",
-    "migrate/direction"
-  ]
-  revision = "afc973c4e5a6b746217c2d3950fcd110ed1ba349"
-  version = "v1.3.2"
-
-[[projects]]
   name = "gopkg.in/telegram-bot-api.v4"
   packages = ["."]
   revision = "2022d04b94f50056a09962b1ac81cdd821d20a55"
@@ -275,6 +233,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ab848cd683629ac1827f2376472107b749f540f4103669e3c4fac73e61223daa"
+  inputs-digest = "35fad371089ed639a9374a3d605a5bd5b4f262f1428b0f282c27cb16554035ca"
   solver-name = "gps-cdcl"
   solver-version = 1
