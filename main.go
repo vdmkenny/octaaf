@@ -78,6 +78,8 @@ func main() {
 				go weather(bot, update.Message)
 			case "what":
 				go what(bot, update.Message)
+			case "bol":
+				go bol(bot, update.Message)
 			}
 		}
 
