@@ -76,6 +76,8 @@ func main() {
 				go count(bot, update.Message)
 			case "weather":
 				go weather(bot, update.Message)
+			case "what":
+				go what(bot, update.Message)
 			}
 		}
 
