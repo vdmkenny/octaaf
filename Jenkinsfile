@@ -15,6 +15,11 @@ pipeline {
             steps {
                 sh 'make'
             }
+            post {
+                always {
+                    sh 'sudo rm -rf vendor'
+                }
+            }
         }
 
         stage('Package') {
