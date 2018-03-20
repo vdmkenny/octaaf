@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"path"
 	"strconv"
@@ -23,7 +24,7 @@ import (
 	"gopkg.in/telegram-bot-api.v4"
 )
 
-func sendRoll(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func sendRoll(message *tgbotapi.Message) {
 	rand.Seed(time.Now().UnixNano())
 	roll := strconv.Itoa(rand.Intn(9999999999-1000000000) + 1000000000)
 	points := [9]string{"👌 Dubs", "🙈 Trips", "😱 Quads", "🤣😂 Penta", "👌👌🤔🤔😂😂 Hexa", "🙊🙉🙈🐵 Septa", "🅱️Octa", "💯💯💯 El Niño"}
@@ -43,21 +44,21 @@ func sendRoll(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, roll)
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func count(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func count(message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("%v", message.MessageID))
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func m8Ball(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func m8Ball(message *tgbotapi.Message) {
 
 	if len(message.CommandArguments()) == 0 {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Oi! You have to ask question hé 🖕")
 		msg.ReplyToMessageID = message.MessageID
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -85,32 +86,32 @@ func m8Ball(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	roll := rand.Intn(19)
 	msg := tgbotapi.NewMessage(message.Chat.ID, answers[roll])
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func sendBodegem(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func sendBodegem(message *tgbotapi.Message) {
 	msg := tgbotapi.NewLocation(message.Chat.ID, 50.8614773, 4.211304)
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func where(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func where(message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 
 	location, found := getLocation(argument)
 
 	if !found {
 		msg := getMessageConfig(message, "This place does not exist 🙈🙈🙈🤔🤔🤔")
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
 	msg := tgbotapi.NewLocation(message.Chat.ID, location.lat, location.lng)
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func what(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func what(message *tgbotapi.Message) {
 	query := message.CommandArguments()
 	resp, _ := http.Get(fmt.Sprintf("https://api.duckduckgo.com/?q=%v&format=json&no_html=1&skip_disambig=1", query))
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -119,22 +120,22 @@ func what(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if len(result) == 0 {
 		msg := getMessageConfig(message, fmt.Sprintf("What is this *%v* you speak of? 🤔", query))
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
 	msg := getMessageConfig(message, fmt.Sprintf("*%v:* %v", query, result))
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func weather(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func weather(message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 
 	location, found := getLocation(argument)
 
 	if !found {
 		msg := getMessageConfig(message, "No data found 🙈🙈🙈🤔🤔🤔")
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -177,10 +178,10 @@ func weather(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	}
 
 	msg := getMessageConfig(message, "*Weather:* "+reply)
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func sendAvatar(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func sendAvatar(message *tgbotapi.Message) {
 	img, err := govatar.GenerateFromUsername(govatar.MALE, message.From.UserName)
 
 	if err != nil {
@@ -193,12 +194,19 @@ func sendAvatar(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	bytes := tgbotapi.FileBytes{Name: "avatar.png", Bytes: buf.Bytes()}
 	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func bol(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func bol(message *tgbotapi.Message) {
 	bolURL := "https://www.bol.com/nl/nieuwsbrieven.html?country=BE"
-	doc, _ := goquery.NewDocument(bolURL)
+	cookieJar, _ := cookiejar.New(nil)
+	client := &http.Client{
+		Jar: cookieJar,
+	}
+
+	resp, _ := client.Get(bolURL)
+	doc, _ := goquery.NewDocumentFromReader(resp.Body)
+
 	token := "bogusTokenValue"
 
 	doc.Find(".newsletter_subscriptions input").Each(func(i int, node *goquery.Selection) {
@@ -208,25 +216,26 @@ func bol(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 		}
 	})
 
-	http.PostForm(bolURL,
-		url.Values{
-			"emailAddress":             {message.CommandArguments()},
-			"subscribedNewsLetters[0]": {"DAGAANBIEDINGEN"},
-			"subscribedNewsLetters[1]": {"SOFT_OPTIN"},
-			"subscribedNewsLetters[2]": {"HARD_OPTIN"},
-			"subscribedNewsLetters[3]": {"B2B"},
-			"token":                    {token},
-			"updateNewsletters":        {"Voorkeuren+opslaan"}})
+	data := url.Values{
+		"emailAddress":          {message.CommandArguments()},
+		"subscribedNewsLetters": {"DAGAANBIEDINGEN", "SOFT_OPTIN", "HARD_OPTIN", "B2B"},
+		"token":                 {token},
+		"updateNewsletters":     {"Voorkeuren+opslaan"}}
+
+	req, _ := http.NewRequest("POST", bolURL, strings.NewReader(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
+	client.Do(req)
 
 	msg := getMessageConfig(message, fmt.Sprintf("Succesfully subscribed *%v* to the bol.com mailing lists!", message.CommandArguments()))
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func search(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func search(message *tgbotapi.Message) {
 	if len(message.CommandArguments()) == 0 {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "What do you expect me to do? 🤔🤔🤔🤔")
 		msg.ReplyToMessageID = message.MessageID
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -242,7 +251,7 @@ func search(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if err != nil {
 		msg := getMessageConfig(message, "Uh oh, server error 🤔")
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -255,15 +264,15 @@ func search(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if found {
 		msg := getMessageConfig(message, url)
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
 	msg := getMessageConfig(message, "I found nothing 😱😱😱")
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func sendStallman(message *tgbotapi.Message) {
 	var url = "https://stallman.org/photos/rms-working/"
 
 	doc, err := goquery.NewDocument(url)
@@ -271,7 +280,7 @@ func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	if err != nil {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman went bork? 🤔🤔🤔🤔")
 		msg.ReplyToMessageID = message.MessageID
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -287,7 +296,7 @@ func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	if len(pages) == 0 {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "No stallman found... 🤔🤔🤔🤔")
 		msg.ReplyToMessageID = message.MessageID
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -301,7 +310,7 @@ func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	if err != nil {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman went bork? 🤔🤔🤔🤔")
 		msg.ReplyToMessageID = message.MessageID
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -317,7 +326,7 @@ func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	if err != nil {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman parser error... 🤔🤔🤔🤔")
 		msg.ReplyToMessageID = message.MessageID
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -326,14 +335,14 @@ func sendStallman(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	msg.Caption = message.CommandArguments()
 	msg.ReplyToMessageID = message.MessageID
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }
 
-func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+func sendImage(message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 	if len(argument) == 0 {
 		msg := getMessageConfig(message, fmt.Sprintf("What am I to do, @%v? 🤔🤔🤔🤔", message.From.UserName))
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -348,7 +357,7 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if err != nil {
 		msg := getMessageConfig(message, "Uh oh, server error 🤔")
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -357,7 +366,7 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if err != nil {
 		msg := getMessageConfig(message, fmt.Sprintf("Something went wrong while searching this query: `%v`", message.CommandArguments()))
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -365,7 +374,7 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	if err != nil {
 		msg := getMessageConfig(message, fmt.Sprintf("Something went wrong while parsing this query response: `%v`", message.CommandArguments()))
-		bot.Send(msg)
+		Octaaf.Send(msg)
 		return
 	}
 
@@ -404,7 +413,7 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 		msg.Caption = message.CommandArguments()
 		msg.ReplyToMessageID = message.MessageID
-		_, e := bot.Send(msg)
+		_, e := Octaaf.Send(msg)
 
 		if e == nil {
 			return
@@ -412,5 +421,5 @@ func sendImage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	}
 
 	msg := getMessageConfig(message, "I did not find images for the query: `"+message.CommandArguments()+"`")
-	bot.Send(msg)
+	Octaaf.Send(msg)
 }

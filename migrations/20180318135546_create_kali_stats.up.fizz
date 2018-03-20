@@ -1,5 +1,0 @@
-create_table("kali_stats", func(t) {
-	t.Column("id", "uuid", {"primary": true})
-	t.Column("message_count", "integer", {})
-	t.Column("date", "timestamp", {})
-})

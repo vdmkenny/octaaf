@@ -34,36 +34,36 @@
   name = "github.com/araddon/dateparse"
 
 [[constraint]]
-  branch = "development"
-  name = "github.com/bartwillems/octaaf"
-
-[[constraint]]
   branch = "master"
   name = "github.com/dustin/go-humanize"
 
 [[constraint]]
+  name = "github.com/gobuffalo/envy"
+  version = "1.6.1"
+
+[[constraint]]
   name = "github.com/gobuffalo/pop"
-  version = "4.2.2"
-
-[[constraint]]
-  name = "github.com/gobuffalo/uuid"
-  version = "2.0.0"
-
-[[constraint]]
-  name = "github.com/gobuffalo/validate"
-  version = "2.0.0"
+  version = "4.3.0"
 
 [[constraint]]
   branch = "master"
   name = "github.com/jasonlvhit/gocron"
 
 [[constraint]]
-  name = "github.com/joho/godotenv"
-  version = "1.2.0"
+  branch = "cobra"
+  name = "github.com/markbates/pop"
+
+[[constraint]]
+  name = "github.com/markbates/validate"
+  version = "1.0.0"
 
 [[constraint]]
   name = "github.com/o1egl/govatar"
   version = "0.2.0"
+
+[[constraint]]
+  name = "github.com/satori/go.uuid"
+  version = "1.2.0"
 
 [[constraint]]
   name = "github.com/tidwall/gjson"
