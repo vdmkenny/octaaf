@@ -40,7 +40,7 @@ func getMessageConfig(message *tgbotapi.Message, text string) tgbotapi.MessageCo
 	return msg
 }
 
-func sendGlobal(bot *tgbotapi.BotAPI, message string) {
+func sendGlobal(message string) {
 	// Wait 1.5 seconds because Telegram has bad NTP
 	time.Sleep(1500)
 
@@ -51,7 +51,7 @@ func sendGlobal(bot *tgbotapi.BotAPI, message string) {
 	}
 
 	msg := tgbotapi.NewMessage(telegramRoomID, message)
-	_, err := bot.Send(msg)
+	_, err := Octaaf.Send(msg)
 
 	if err != nil {
 		log.Printf("Error while sending '%s': %s", message, err)

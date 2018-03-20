@@ -2,47 +2,30 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
-	"github.com/gobuffalo/pop"
-	"github.com/joho/godotenv"
+	"github.com/gobuffalo/envy"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
+var kaliCount *int
+
 func main() {
-	err := godotenv.Load("config/.env")
+	envy.Load("config/.env")
 
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	connectDB()
+	migrateDB()
+	initBot()
 
-	tx, e := pop.Connect(os.Getenv("ENVIRONMENT"))
-
-	if e != nil {
-		log.Panic(e)
-	}
-
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_API_TOKEN"))
-
-	if err != nil {
-		log.Panic(err)
-	}
+	go initCrons()
 
 	kaliID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
-	var kaliCount int
-
-	go initCrons(bot, tx, &kaliCount)
-
-	bot.Debug = false
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates, _ := Octaaf.GetUpdatesChan(u)
 
 	for update := range updates {
 
@@ -51,35 +34,35 @@ func main() {
 		}
 
 		if update.Message.Chat.ID == kaliID {
-			kaliCount = update.Message.MessageID
+			*kaliCount = update.Message.MessageID
 		}
 
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "roll":
-				go sendRoll(bot, update.Message)
+				go sendRoll(update.Message)
 			case "m8ball":
-				go m8Ball(bot, update.Message)
+				go m8Ball(update.Message)
 			case "bodegem":
-				go sendBodegem(bot, update.Message)
+				go sendBodegem(update.Message)
 			case "img", "img_sfw":
-				go sendImage(bot, update.Message)
+				go sendImage(update.Message)
 			case "stallman":
-				go sendStallman(bot, update.Message)
+				go sendStallman(update.Message)
 			case "avatar":
-				go sendAvatar(bot, update.Message)
+				go sendAvatar(update.Message)
 			case "search", "search_nsfw":
-				go search(bot, update.Message)
+				go search(update.Message)
 			case "where":
-				go where(bot, update.Message)
+				go where(update.Message)
 			case "count":
-				go count(bot, update.Message)
+				go count(update.Message)
 			case "weather":
-				go weather(bot, update.Message)
+				go weather(update.Message)
 			case "what":
-				go what(bot, update.Message)
+				go what(update.Message)
 			case "bol":
-				go bol(bot, update.Message)
+				go bol(update.Message)
 			}
 		}
 
@@ -87,7 +70,7 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("💯💯💯💯 YOU HAVE MESSAGE %v 💯💯💯💯", update.Message.MessageID))
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ParseMode = "markdown"
-			bot.Send(msg)
+			Octaaf.Send(msg)
 		}
 	}
 }
