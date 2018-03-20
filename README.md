@@ -1,7 +1,9 @@
 # Octaaf
+
 A telegram bot written in Go
 
 ## Commands
+
 * /img - Search possible NSFW images
 * /img_sfw - Search possible SFW images
 * /bodegem - A place that is real and exists
@@ -14,3 +16,4 @@ A telegram bot written in Go
 * /where - Find places on earth
 * /count - Get your current message count
 * /weather - Get the weather of a city
+* /what - Explains what something is

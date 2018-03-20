@@ -109,6 +109,23 @@ func where(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	bot.Send(msg)
 }
 
+func what(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	query := message.CommandArguments()
+	resp, _ := http.Get(fmt.Sprintf("https://api.duckduckgo.com/?q=%v&format=json&no_html=1&skip_disambig=1", query))
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	result := gjson.Get(string(body), "AbstractText").String()
+
+	if len(result) == 0 {
+		msg := getMessageConfig(message, fmt.Sprintf("What is this *%v* you speak of? 🤔", query))
+		bot.Send(msg)
+		return
+	}
+
+	msg := getMessageConfig(message, fmt.Sprintf("*%v:* %v", query, result))
+	bot.Send(msg)
+}
+
 func weather(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 
