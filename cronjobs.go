@@ -20,12 +20,12 @@ func setKaliCount() {
 	err := DB.Last(&lastCount)
 
 	count := models.MessageCount{
-		Count: *kaliCount,
+		Count: kaliCount,
 		Diff:  0,
 	}
 
 	if err == nil {
-		count.Diff = (*kaliCount - lastCount.Count)
+		count.Diff = (kaliCount - lastCount.Count)
 	}
 
 	DB.Save(&count)

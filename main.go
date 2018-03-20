@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -9,7 +10,7 @@ import (
 	"gopkg.in/telegram-bot-api.v4"
 )
 
-var kaliCount *int
+var kaliCount int
 
 func main() {
 	envy.Load("config/.env")
@@ -34,7 +35,8 @@ func main() {
 		}
 
 		if update.Message.Chat.ID == kaliID {
-			*kaliCount = update.Message.MessageID
+			log.Printf("Got message!")
+			kaliCount = update.Message.MessageID
 		}
 
 		if update.Message.IsCommand() {

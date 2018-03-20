@@ -46,24 +46,20 @@
   version = "4.3.0"
 
 [[constraint]]
+  name = "github.com/gobuffalo/uuid"
+  version = "2.0.0"
+
+[[constraint]]
+  name = "github.com/gobuffalo/validate"
+  version = "2.0.0"
+
+[[constraint]]
   branch = "master"
   name = "github.com/jasonlvhit/gocron"
 
 [[constraint]]
-  branch = "cobra"
-  name = "github.com/markbates/pop"
-
-[[constraint]]
-  name = "github.com/markbates/validate"
-  version = "1.0.0"
-
-[[constraint]]
   name = "github.com/o1egl/govatar"
   version = "0.2.0"
-
-[[constraint]]
-  name = "github.com/satori/go.uuid"
-  version = "1.2.0"
 
 [[constraint]]
   name = "github.com/tidwall/gjson"

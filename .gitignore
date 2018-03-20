@@ -20,6 +20,7 @@ migrations/schema.sql
 
 # Vendor
 vendor
+_vendor-*
 
 # Octaaf binary
 [oO]ctaaf
