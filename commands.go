@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -192,6 +193,32 @@ func sendAvatar(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	bytes := tgbotapi.FileBytes{Name: "avatar.png", Bytes: buf.Bytes()}
 	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
 	msg.ReplyToMessageID = message.MessageID
+	bot.Send(msg)
+}
+
+func bol(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+	bolURL := "https://www.bol.com/nl/nieuwsbrieven.html?country=BE"
+	doc, _ := goquery.NewDocument(bolURL)
+	token := "bogusTokenValue"
+
+	doc.Find(".newsletter_subscriptions input").Each(func(i int, node *goquery.Selection) {
+		name, found := node.Attr("name")
+		if found && name == "token" {
+			token, _ = node.Attr("value")
+		}
+	})
+
+	http.PostForm(bolURL,
+		url.Values{
+			"emailAddress":             {message.CommandArguments()},
+			"subscribedNewsLetters[0]": {"DAGAANBIEDINGEN"},
+			"subscribedNewsLetters[1]": {"SOFT_OPTIN"},
+			"subscribedNewsLetters[2]": {"HARD_OPTIN"},
+			"subscribedNewsLetters[3]": {"B2B"},
+			"token":                    {token},
+			"updateNewsletters":        {"Voorkeuren+opslaan"}})
+
+	msg := getMessageConfig(message, fmt.Sprintf("Succesfully subscribed *%v* to the bol.com mailing lists!", message.CommandArguments()))
 	bot.Send(msg)
 }
 
