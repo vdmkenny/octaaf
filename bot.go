@@ -24,3 +24,10 @@ func initBot() {
 
 	log.Printf("Authorized on account %s", Octaaf.Self.UserName)
 }
+
+func reply(message *tgbotapi.Message, text string) {
+	msg := tgbotapi.NewMessage(message.Chat.ID, text)
+	msg.ReplyToMessageID = message.MessageID
+	msg.ParseMode = "markdown"
+	Octaaf.Send(msg)
+}
