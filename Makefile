@@ -20,7 +20,7 @@ compile:
 	docker run --rm \
 		-v "$(shell pwd)":/go/src/octaaf \
 		-w /go/src/octaaf octaaf:latest \
-		/bin/ash -c "dep ensure && go build -v"
+		/bin/bash -c "dep ensure && go build -v"
 	strip octaaf
 
 TMPDIR := $(shell mktemp -d)
