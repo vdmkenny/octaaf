@@ -36,6 +36,7 @@ package:
 	cp ./octaaf.service $(SYSTEM)/octaaf.service
 	cp ./config/.env.dist $(CONFIG)/.env
 	cp ./config/database.yml.dist $(CONFIG)/database.yml
+	cp -r ./migrations $(TARGET)/
 	
 	fpm -s dir -t rpm \
 		--name "$(NAME)" \
@@ -46,6 +47,7 @@ package:
 		--force \
 		--config-files /usr/lib/systemd/system/octaaf.service \
 		--config-files /opt/octaaf/config/.env \
+		--config-files /opt/octaaf/config/database.yml \
 		--chdir $(TMPDIR) \
 		.; \
 	
