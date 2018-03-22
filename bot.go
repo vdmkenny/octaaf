@@ -43,7 +43,8 @@ func handle(message *tgbotapi.Message) {
 	if message.Chat.ID == KaliID {
 		KaliCount = message.MessageID
 
-		if message.From.ID == ReporterID && strings.ToLower(message.Text) == "reported" {
+		if message.From.ID == ReporterID &&
+			(strings.ToLower(message.Text) == "reported" || message.Sticker.FileID == "CAADBAAD5gEAAreTBA3s5qVy8bxHfAI") {
 			DB.Save(&models.Report{})
 		}
 	}
