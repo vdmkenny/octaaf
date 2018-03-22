@@ -1,5 +1,8 @@
 [Unit]
 Description=Octaaf, a Telegram bot
+Documentation=https://github.com/BartWillems/Octaaf
+Requires=postgresql.service
+After=postgresql.service
 
 [Service]
 Type=simple

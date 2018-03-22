@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -44,13 +43,7 @@ func sendGlobal(message string) {
 	// Wait 1.5 seconds because Telegram has bad NTP
 	time.Sleep(1500)
 
-	telegramRoomID, e := strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
-
-	if e != nil {
-		log.Println("Invalid Telegram room id, not sending global messages.")
-	}
-
-	msg := tgbotapi.NewMessage(telegramRoomID, message)
+	msg := tgbotapi.NewMessage(KaliID, message)
 	_, err := Octaaf.Send(msg)
 
 	if err != nil {

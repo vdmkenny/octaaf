@@ -41,24 +41,21 @@ func sendRoll(message *tgbotapi.Message) {
 	if dubscount > -1 {
 		roll = points[dubscount] + " " + roll
 	}
-
-	msg := tgbotapi.NewMessage(message.Chat.ID, roll)
-	msg.ReplyToMessageID = message.MessageID
-	Octaaf.Send(msg)
+	reply(message, roll)
 }
 
 func count(message *tgbotapi.Message) {
-	msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("%v", message.MessageID))
-	msg.ReplyToMessageID = message.MessageID
-	Octaaf.Send(msg)
+	reply(message, fmt.Sprintf("%v", message.MessageID))
+}
+
+func whoami(message *tgbotapi.Message) {
+	reply(message, fmt.Sprintf("%v", message.From.ID))
 }
 
 func m8Ball(message *tgbotapi.Message) {
 
 	if len(message.CommandArguments()) == 0 {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Oi! You have to ask question hé 🖕")
-		msg.ReplyToMessageID = message.MessageID
-		Octaaf.Send(msg)
+		reply(message, "Oi! You have to ask question hé 🖕")
 		return
 	}
 
@@ -101,8 +98,7 @@ func where(message *tgbotapi.Message) {
 	location, found := getLocation(argument)
 
 	if !found {
-		msg := getMessageConfig(message, "This place does not exist 🙈🙈🙈🤔🤔🤔")
-		Octaaf.Send(msg)
+		reply(message, "This place does not exist 🙈🙈🙈🤔🤔�")
 		return
 	}
 
@@ -119,13 +115,11 @@ func what(message *tgbotapi.Message) {
 	result := gjson.Get(string(body), "AbstractText").String()
 
 	if len(result) == 0 {
-		msg := getMessageConfig(message, fmt.Sprintf("What is this *%v* you speak of? 🤔", query))
-		Octaaf.Send(msg)
+		reply(message, fmt.Sprintf("What is this *%v* you speak of? 🤔", query))
 		return
 	}
 
-	msg := getMessageConfig(message, fmt.Sprintf("*%v:* %v", query, result))
-	Octaaf.Send(msg)
+	reply(message, fmt.Sprintf("*%v:* %v", query, result))
 }
 
 func weather(message *tgbotapi.Message) {
@@ -134,8 +128,7 @@ func weather(message *tgbotapi.Message) {
 	location, found := getLocation(argument)
 
 	if !found {
-		msg := getMessageConfig(message, "No data found 🙈🙈🙈🤔🤔🤔")
-		Octaaf.Send(msg)
+		reply(message, "No data found 🙈🙈🙈🤔🤔🤔")
 		return
 	}
 
@@ -143,42 +136,41 @@ func weather(message *tgbotapi.Message) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	weatherJSON := string(body)
 
-	reply := "No weather data found."
+	msg := "No weather data found."
 
 	forecasts := gjson.Get(weatherJSON, "forecasts").Array()
 	raining := false
 
 	if len(forecasts) > 0 {
-		reply = "☀️☀️☀️ It's not going to rain in " + message.CommandArguments()
+		msg = "☀️☀️☀️ It's not going to rain in " + message.CommandArguments()
 		if forecasts[0].Get("precipation").Num > 0 {
-			reply = "🌧🌧🌧 It's now raining in " + message.CommandArguments()
+			msg = "🌧🌧🌧 It's now raining in " + message.CommandArguments()
 			raining = true
 		}
 	}
 
 	for _, forecast := range forecasts {
 		if raining && forecast.Get("precipation").Num == 0 {
-			reply += ", but it's expected to stop "
+			msg += ", but it's expected to stop "
 			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
 			if err != nil {
-				reply += " in " + forecast.Get("datetime").String()
+				msg += " in " + forecast.Get("datetime").String()
 			} else {
-				reply += humanize.Time(rain)
+				msg += humanize.Time(rain)
 			}
 			break
 		} else if forecast.Get("precipation").Num > 0 {
 			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
 			if err != nil {
-				reply = "🌦🌦🌦 Expected rain from " + forecast.Get("datetime").String()
+				msg = "🌦🌦🌦 Expected rain from " + forecast.Get("datetime").String()
 			} else {
-				reply = "🌦🌦🌦 Expected rain " + humanize.Time(rain)
+				msg = "🌦🌦🌦 Expected rain " + humanize.Time(rain)
 			}
 			break
 		}
 	}
 
-	msg := getMessageConfig(message, "*Weather:* "+reply)
-	Octaaf.Send(msg)
+	reply(message, "*Weather:* "+msg)
 }
 
 func sendAvatar(message *tgbotapi.Message) {
@@ -227,15 +219,12 @@ func bol(message *tgbotapi.Message) {
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
 	client.Do(req)
 
-	msg := getMessageConfig(message, fmt.Sprintf("Succesfully subscribed *%v* to the bol.com mailing lists!", message.CommandArguments()))
-	Octaaf.Send(msg)
+	reply(message, fmt.Sprintf("Succesfully subscribed *%v* to the bol.com mailing lists!", message.CommandArguments()))
 }
 
 func search(message *tgbotapi.Message) {
 	if len(message.CommandArguments()) == 0 {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "What do you expect me to do? 🤔🤔🤔🤔")
-		msg.ReplyToMessageID = message.MessageID
-		Octaaf.Send(msg)
+		reply(message, "What do you expect me to do? 🤔🤔🤔🤔")
 		return
 	}
 
@@ -250,8 +239,7 @@ func search(message *tgbotapi.Message) {
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		msg := getMessageConfig(message, "Uh oh, server error 🤔")
-		Octaaf.Send(msg)
+		reply(message, "Uh oh, server error 🤔")
 		return
 	}
 
@@ -263,13 +251,11 @@ func search(message *tgbotapi.Message) {
 	url, found := doc.Find(".result-link").First().Attr("href")
 
 	if found {
-		msg := getMessageConfig(message, url)
-		Octaaf.Send(msg)
+		reply(message, url)
 		return
 	}
 
-	msg := getMessageConfig(message, "I found nothing 😱😱😱")
-	Octaaf.Send(msg)
+	reply(message, "I found nothing 😱😱😱")
 }
 
 func sendStallman(message *tgbotapi.Message) {
@@ -278,9 +264,7 @@ func sendStallman(message *tgbotapi.Message) {
 	doc, err := goquery.NewDocument(url)
 
 	if err != nil {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman went bork? 🤔🤔🤔🤔")
-		msg.ReplyToMessageID = message.MessageID
-		Octaaf.Send(msg)
+		reply(message, "Stallman went bork? 🤔🤔🤔🤔")
 		return
 	}
 
@@ -294,9 +278,7 @@ func sendStallman(message *tgbotapi.Message) {
 	})
 
 	if len(pages) == 0 {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "No stallman found... 🤔🤔🤔🤔")
-		msg.ReplyToMessageID = message.MessageID
-		Octaaf.Send(msg)
+		reply(message, "No stallman found... 🤔🤔🤔🤔")
 		return
 	}
 
@@ -308,9 +290,7 @@ func sendStallman(message *tgbotapi.Message) {
 	doc, err = goquery.NewDocument(url + pages[roll])
 
 	if err != nil {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman went bork? 🤔🤔🤔🤔")
-		msg.ReplyToMessageID = message.MessageID
-		Octaaf.Send(msg)
+		reply(message, "Stallman went bork? 🤔🤔🤔🤔")
 		return
 	}
 
@@ -324,9 +304,7 @@ func sendStallman(message *tgbotapi.Message) {
 	content, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		msg := tgbotapi.NewMessage(message.Chat.ID, "Stallman parser error... 🤔🤔🤔🤔")
-		msg.ReplyToMessageID = message.MessageID
-		Octaaf.Send(msg)
+		reply(message, "Stallman went bork? 🤔🤔🤔🤔")
 		return
 	}
 
@@ -341,8 +319,7 @@ func sendStallman(message *tgbotapi.Message) {
 func sendImage(message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 	if len(argument) == 0 {
-		msg := getMessageConfig(message, fmt.Sprintf("What am I to do, @%v? 🤔🤔🤔🤔", message.From.UserName))
-		Octaaf.Send(msg)
+		reply(message, fmt.Sprintf("What am I to do, @%v? 🤔🤔🤔🤔", message.From.UserName))
 		return
 	}
 
@@ -356,8 +333,7 @@ func sendImage(message *tgbotapi.Message) {
 	req, err := http.NewRequest("GET", query, nil)
 
 	if err != nil {
-		msg := getMessageConfig(message, "Uh oh, server error 🤔")
-		Octaaf.Send(msg)
+		reply(message, "Uh oh, server error 🤔")
 		return
 	}
 
@@ -365,16 +341,14 @@ func sendImage(message *tgbotapi.Message) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		msg := getMessageConfig(message, fmt.Sprintf("Something went wrong while searching this query: `%v`", message.CommandArguments()))
-		Octaaf.Send(msg)
+		reply(message, fmt.Sprintf("Something went wrong while searching this query: `%v`", message.CommandArguments()))
 		return
 	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 
 	if err != nil {
-		msg := getMessageConfig(message, fmt.Sprintf("Something went wrong while parsing this query response: `%v`", message.CommandArguments()))
-		Octaaf.Send(msg)
+		reply(message, fmt.Sprintf("Something went wrong while parsing this query response: `%v`", message.CommandArguments()))
 		return
 	}
 
@@ -420,6 +394,5 @@ func sendImage(message *tgbotapi.Message) {
 		}
 	}
 
-	msg := getMessageConfig(message, "I did not find images for the query: `"+message.CommandArguments()+"`")
-	Octaaf.Send(msg)
+	reply(message, "I did not find images for the query: `"+message.CommandArguments()+"`")
 }
