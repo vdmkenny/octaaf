@@ -15,9 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/araddon/dateparse"
-	humanize "github.com/dustin/go-humanize"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/o1egl/govatar"
 	"github.com/tidwall/gjson"
@@ -123,54 +120,12 @@ func what(message *tgbotapi.Message) {
 }
 
 func weather(message *tgbotapi.Message) {
-	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
-
-	location, found := scrapers.GetLocation(argument)
-
+	weather, found := scrapers.GetWeatherStatus(message.CommandArguments())
 	if !found {
 		reply(message, "No data found 🙈🙈🙈🤔🤔🤔")
-		return
+	} else {
+		reply(message, "*Weather:* "+weather)
 	}
-
-	resp, _ := http.Get(fmt.Sprintf("https://graphdata.buienradar.nl/forecast/json/?lat=%v&lon=%v", location.Lat, location.Lng))
-	body, _ := ioutil.ReadAll(resp.Body)
-	weatherJSON := string(body)
-
-	msg := "No weather data found."
-
-	forecasts := gjson.Get(weatherJSON, "forecasts").Array()
-	raining := false
-
-	if len(forecasts) > 0 {
-		msg = "☀️☀️☀️ It's not going to rain in " + message.CommandArguments()
-		if forecasts[0].Get("precipation").Num > 0 {
-			msg = "🌧🌧🌧 It's now raining in " + message.CommandArguments()
-			raining = true
-		}
-	}
-
-	for _, forecast := range forecasts {
-		if raining && forecast.Get("precipation").Num == 0 {
-			msg += ", but it's expected to stop "
-			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
-			if err != nil {
-				msg += " in " + forecast.Get("datetime").String()
-			} else {
-				msg += humanize.Time(rain)
-			}
-			break
-		} else if forecast.Get("precipation").Num > 0 {
-			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
-			if err != nil {
-				msg = "🌦🌦🌦 Expected rain from " + forecast.Get("datetime").String()
-			} else {
-				msg = "🌦🌦🌦 Expected rain " + humanize.Time(rain)
-			}
-			break
-		}
-	}
-
-	reply(message, "*Weather:* "+msg)
 }
 
 func sendAvatar(message *tgbotapi.Message) {
