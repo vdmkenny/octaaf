@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"octaaf/models"
 	"octaaf/scrapers"
 	"strconv"
 	"strings"
@@ -269,4 +270,52 @@ func xkcd(message *tgbotapi.Message) {
 	msg.Caption = message.CommandArguments()
 	msg.ReplyToMessageID = message.MessageID
 	Octaaf.Send(msg)
+}
+
+func quote(message *tgbotapi.Message) {
+	if message.Chat.ID != KaliID {
+		reply(message, "You are not allowed!!")
+	}
+
+	// Fetch a random quote
+	if message.ReplyToMessage == nil {
+		quote := models.Quote{}
+
+		quoteCount, err := DB.Count(models.Quote{})
+
+		if err != nil {
+			log.Printf("Quote fetch error: %v", err)
+			reply(message, "Error while fetching a quote")
+			return
+		}
+
+		if quoteCount == 0 {
+			reply(message, "No quotes have been saved yet.")
+			return
+		}
+
+		rand.Seed(time.Now().UnixNano())
+		roll := rand.Intn(quoteCount + 1)
+
+		DB.Paginate(roll, 1).First(&quote)
+
+		reply(message, quote.Quote)
+		return
+	}
+
+	// Unable to store this quote
+	if message.ReplyToMessage.Text == "" {
+		reply(message, "No text found in the comment. Not saving the quote!")
+		return
+	}
+
+	err := DB.Save(&models.Quote{Quote: message.ReplyToMessage.Text, UserID: message.ReplyToMessage.From.ID})
+
+	if err != nil {
+		log.Printf("Quote error: %v", err)
+		reply(message, "Unable to save the quote...")
+		return
+	}
+
+	reply(message, "Quote successfully saved!")
 }
