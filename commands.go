@@ -275,6 +275,7 @@ func xkcd(message *tgbotapi.Message) {
 func quote(message *tgbotapi.Message) {
 	if message.Chat.ID != KaliID {
 		reply(message, "You are not allowed!!")
+		return
 	}
 
 	// Fetch a random quote
