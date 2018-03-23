@@ -18,3 +18,4 @@ A telegram bot written in Go
 * /weather - Get the weather of a city
 * /what - Explains what something is
 * /where - Find places on earth
+* /xkcd - Get a random XKCD comic

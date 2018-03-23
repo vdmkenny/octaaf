@@ -136,8 +136,8 @@
     "parser",
     "vm"
   ]
-  revision = "804acf7e67a6c1389ea487791a6ac149cc81ae44"
-  version = "v0.0.1"
+  revision = "f4b54922efdd844c58a93f8faca1fe0c62ca44c3"
+  version = "v0.0.2"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -216,7 +216,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "7ceb54c8418b8f9cdf0177b511d5cbb06e9fae39"
+  revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
 
 [[projects]]
   name = "gopkg.in/telegram-bot-api.v4"
