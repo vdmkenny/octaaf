@@ -104,6 +104,8 @@ func handle(message *tgbotapi.Message) {
 			bol(message)
 		case "xkcd":
 			xkcd(message)
+		case "quote":
+			quote(message)
 		}
 	}
 
