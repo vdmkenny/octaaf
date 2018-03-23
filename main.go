@@ -1,9 +1,7 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
+	"log"
 
 	"github.com/gobuffalo/envy"
 	"gopkg.in/telegram-bot-api.v4"
@@ -27,20 +25,13 @@ func main() {
 
 	go initCrons()
 
-	sendGlobal("I'm back up and running! 👌")
-
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		sendGlobal("I'm going down for onderhoud! ☝️")
-		DB.Close()
-		os.Exit(0)
-	}()
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-	updates, _ := Octaaf.GetUpdatesChan(u)
+	updates, err := Octaaf.GetUpdatesChan(u)
+
+	if err != nil {
+		log.Panicf("Failed to fetch updates: %v", err)
+	}
 
 	for update := range updates {
 

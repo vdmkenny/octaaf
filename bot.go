@@ -5,8 +5,11 @@ import (
 	"log"
 	"octaaf/models"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/gobuffalo/envy"
 	"gopkg.in/telegram-bot-api.v4"
@@ -28,8 +31,29 @@ func initBot() {
 
 	log.Printf("Authorized on account %s", Octaaf.Self.UserName)
 
-	KaliID, _ = strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
-	ReporterID, _ = strconv.Atoi(envy.Get("REPORTER_ID", "-1"))
+	KaliID, err = strconv.ParseInt(os.Getenv("TELEGRAM_ROOM_ID"), 10, 64)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	ReporterID, err = strconv.Atoi(envy.Get("REPORTER_ID", "-1"))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if env != "development" {
+		sendGlobal("I'm back up and running! 👌")
+
+		c := make(chan os.Signal, 2)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-c
+			sendGlobal("I'm going down for onderhoud! ☝️")
+			DB.Close()
+			os.Exit(0)
+		}()
+	}
 }
 
 func reply(message *tgbotapi.Message, text string) {
@@ -50,7 +74,6 @@ func handle(message *tgbotapi.Message) {
 				DB.Save(&models.Report{})
 			}
 		}
-
 	}
 
 	if message.IsCommand() {
@@ -79,6 +102,8 @@ func handle(message *tgbotapi.Message) {
 			what(message)
 		case "bol":
 			bol(message)
+		case "xkcd":
+			xkcd(message)
 		}
 	}
 
@@ -89,4 +114,16 @@ func handle(message *tgbotapi.Message) {
 		Octaaf.Send(msg)
 	}
 
+}
+
+func sendGlobal(message string) {
+	// Wait 1.5 seconds because Telegram has bad NTP
+	time.Sleep(1500)
+
+	msg := tgbotapi.NewMessage(KaliID, message)
+	_, err := Octaaf.Send(msg)
+
+	if err != nil {
+		log.Printf("Error while sending '%s': %s", message, err)
+	}
 }

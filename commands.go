@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"path"
+	"octaaf/scrapers"
 	"strconv"
 	"strings"
 	"time"
@@ -95,14 +95,14 @@ func sendBodegem(message *tgbotapi.Message) {
 func where(message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 
-	location, found := getLocation(argument)
+	location, found := scrapers.GetLocation(argument)
 
 	if !found {
 		reply(message, "This place does not exist 🙈🙈🙈🤔🤔�")
 		return
 	}
 
-	msg := tgbotapi.NewLocation(message.Chat.ID, location.lat, location.lng)
+	msg := tgbotapi.NewLocation(message.Chat.ID, location.Lat, location.Lng)
 	msg.ReplyToMessageID = message.MessageID
 	Octaaf.Send(msg)
 }
@@ -125,14 +125,14 @@ func what(message *tgbotapi.Message) {
 func weather(message *tgbotapi.Message) {
 	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
 
-	location, found := getLocation(argument)
+	location, found := scrapers.GetLocation(argument)
 
 	if !found {
 		reply(message, "No data found 🙈🙈🙈🤔🤔🤔")
 		return
 	}
 
-	resp, _ := http.Get(fmt.Sprintf("https://graphdata.buienradar.nl/forecast/json/?lat=%v&lon=%v", location.lat, location.lng))
+	resp, _ := http.Get(fmt.Sprintf("https://graphdata.buienradar.nl/forecast/json/?lat=%v&lon=%v", location.Lat, location.Lng))
 	body, _ := ioutil.ReadAll(resp.Body)
 	weatherJSON := string(body)
 
@@ -228,27 +228,7 @@ func search(message *tgbotapi.Message) {
 		return
 	}
 
-	// Basic url that disables ads
-	url := "https://duckduckgo.com/lite?k1=-1&q=" + message.CommandArguments()
-
-	if message.Command() == "search_nsfw" {
-		url += "&kp=-2"
-	}
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-
-	if err != nil {
-		reply(message, "Uh oh, server error 🤔")
-		return
-	}
-
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
-	resp, _ := client.Do(req)
-
-	doc, _ := goquery.NewDocumentFromReader(resp.Body)
-
-	url, found := doc.Find(".result-link").First().Attr("href")
+	url, found := scrapers.Search(message.CommandArguments(), message.Command() == "search_nsfw")
 
 	if found {
 		reply(message, url)
@@ -259,56 +239,15 @@ func search(message *tgbotapi.Message) {
 }
 
 func sendStallman(message *tgbotapi.Message) {
-	var url = "https://stallman.org/photos/rms-working/"
 
-	doc, err := goquery.NewDocument(url)
-
-	if err != nil {
-		reply(message, "Stallman went bork? 🤔🤔🤔🤔")
-		return
-	}
-
-	var pages []string
-
-	doc.Find("img").Each(func(i int, token *goquery.Selection) {
-		url, exists := token.Parent().Attr("href")
-		if exists {
-			pages = append(pages, url)
-		}
-	})
-
-	if len(pages) == 0 {
-		reply(message, "No stallman found... 🤔🤔🤔🤔")
-		return
-	}
-
-	rand.Seed(time.Now().UnixNano())
-	roll := rand.Intn(len(pages))
-
-	log.Printf("Roll: %v", pages[roll])
-
-	doc, err = goquery.NewDocument(url + pages[roll])
+	image, err := scrapers.GetStallman()
 
 	if err != nil {
 		reply(message, "Stallman went bork? 🤔🤔🤔🤔")
 		return
 	}
 
-	image, _ := doc.Find("img").First().Parent().Attr("href")
-
-	log.Printf("Image: %v", image)
-	log.Printf("Url: %v", url+path.Base(image))
-
-	res, _ := http.Get(url + path.Base(image))
-
-	content, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		reply(message, "Stallman went bork? 🤔🤔🤔🤔")
-		return
-	}
-
-	bytes := tgbotapi.FileBytes{Name: "stally.jpg", Bytes: content}
+	bytes := tgbotapi.FileBytes{Name: "stally.jpg", Bytes: image}
 	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
 
 	msg.Caption = message.CommandArguments()
@@ -317,54 +256,19 @@ func sendStallman(message *tgbotapi.Message) {
 }
 
 func sendImage(message *tgbotapi.Message) {
-	argument := strings.Replace(message.CommandArguments(), " ", "+", -1)
-	if len(argument) == 0 {
+	if len(message.CommandArguments()) == 0 {
 		reply(message, fmt.Sprintf("What am I to do, @%v? 🤔🤔🤔🤔", message.From.UserName))
 		return
 	}
 
-	query := "http://images.google.com/search?tbm=isch&q=" + argument
-
-	if message.Command() == "img_sfw" {
-		query += "&safe=on"
-	}
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", query, nil)
+	images, err := scrapers.GetImages(message.CommandArguments(), message.Command() == "img_sfw")
 
 	if err != nil {
-		reply(message, "Uh oh, server error 🤔")
-		return
+		reply(message, "Something went wrong!")
 	}
-
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
-	resp, err := client.Do(req)
-
-	if err != nil {
-		reply(message, fmt.Sprintf("Something went wrong while searching this query: `%v`", message.CommandArguments()))
-		return
-	}
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-
-	if err != nil {
-		reply(message, fmt.Sprintf("Something went wrong while parsing this query response: `%v`", message.CommandArguments()))
-		return
-	}
-
-	var images []string
-
-	doc.Find(".rg_di .rg_meta").Each(func(i int, token *goquery.Selection) {
-		imageJSON := token.Text()
-		imageURL := gjson.Get(imageJSON, "ou").String()
-
-		if len(imageURL) > 0 {
-			images = append(images, imageURL)
-		}
-	})
 
 	timeout := time.Duration(2 * time.Second)
-	client = &http.Client{
+	client := &http.Client{
 		Timeout: timeout,
 	}
 
@@ -395,4 +299,19 @@ func sendImage(message *tgbotapi.Message) {
 	}
 
 	reply(message, "I did not find images for the query: `"+message.CommandArguments()+"`")
+}
+
+func xkcd(message *tgbotapi.Message) {
+	image, err := scrapers.GetXKCD()
+
+	if err != nil {
+		reply(message, "Failed to parse XKCD image")
+	}
+
+	bytes := tgbotapi.FileBytes{Name: "image.jpg", Bytes: image}
+	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, bytes)
+
+	msg.Caption = message.CommandArguments()
+	msg.ReplyToMessageID = message.MessageID
+	Octaaf.Send(msg)
 }
