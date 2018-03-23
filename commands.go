@@ -281,23 +281,12 @@ func quote(message *tgbotapi.Message) {
 	if message.ReplyToMessage == nil {
 		quote := models.Quote{}
 
-		quoteCount, err := DB.Count(models.Quote{})
+		DB.Order("random()").Limit(1).First(&quote)
 
-		if err != nil {
-			log.Printf("Quote fetch error: %v", err)
-			reply(message, "Error while fetching a quote")
-			return
-		}
-
-		if quoteCount == 0 {
+		if quote == (models.Quote{}) {
 			reply(message, "No quotes have been saved yet.")
 			return
 		}
-
-		rand.Seed(time.Now().UnixNano())
-		roll := rand.Intn(quoteCount + 1)
-
-		DB.Paginate(roll, 1).First(&quote)
 
 		reply(message, quote.Quote)
 		return
