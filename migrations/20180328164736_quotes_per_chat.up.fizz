@@ -1,1 +1,1 @@
-add_column("quotes", "chat_id", "bigint", {})
+add_column("quotes", "chat_id", "bigint", {"null": true})
