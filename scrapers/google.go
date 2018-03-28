@@ -24,7 +24,7 @@ func GetImages(query string, safe bool) ([]string, error) {
 	url := "http://images.google.com/search?tbm=isch&q=" + query
 
 	if safe {
-		query += "&safe=on"
+		url += "&safe=on"
 	}
 
 	client := &http.Client{}
