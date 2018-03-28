@@ -277,7 +277,12 @@ func quote(message *tgbotapi.Message) {
 	if message.ReplyToMessage == nil {
 		quote := models.Quote{}
 
-		DB.Order("random()").Limit(1).First(&quote)
+		err := DB.Where("chat_id = ?", message.Chat.ID).Order("random()").Limit(1).First(&quote)
+
+		if err != nil {
+			reply(message, "Something went wrong while fetching a quote!")
+			return
+		}
 
 		if quote == (models.Quote{}) {
 			reply(message, "No quotes have been saved yet.")
@@ -297,10 +302,9 @@ func quote(message *tgbotapi.Message) {
 	err := DB.Save(&models.Quote{
 		Quote:  message.ReplyToMessage.Text,
 		UserID: message.ReplyToMessage.From.ID,
-		ChatID: message.ForwardFromChat.ID})
+		ChatID: message.Chat.ID})
 
 	if err != nil {
-		log.Printf("Quote error: %v", err)
 		reply(message, "Unable to save the quote...")
 		return
 	}
