@@ -20,17 +20,19 @@ func GetWeatherStatus(query string) (string, bool) {
 		return "", false
 	}
 
-	resp, err := http.Get(fmt.Sprintf("https://graphdata.buienradar.nl/forecast/json/?lat=%v&lon=%v", location.Lat, location.Lng))
+	res, err := http.Get(fmt.Sprintf("https://graphdata.buienradar.nl/forecast/json/?lat=%v&lon=%v", location.Lat, location.Lng))
 
 	if err != nil {
 		return "", false
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
 		return "", false
 	}
+
+	defer res.Body.Close()
 
 	weatherJSON := string(body)
 
@@ -40,9 +42,9 @@ func GetWeatherStatus(query string) (string, bool) {
 	raining := false
 
 	if len(forecasts) > 0 {
-		msg = "☀️☀️☀️ It's not going to rain in " + query
+		msg = "It's not going to rain in " + query + " ☀️☀️☀️"
 		if forecasts[0].Get("precipation").Num > 0 {
-			msg = "🌧🌧🌧 It's now raining in " + query
+			msg = "It's now raining in " + query + " 🌧🌧🌧"
 			raining = true
 		}
 	}
@@ -60,9 +62,9 @@ func GetWeatherStatus(query string) (string, bool) {
 		} else if forecast.Get("precipation").Num > 0 {
 			rain, err := dateparse.ParseAny(forecast.Get("datetime").String())
 			if err != nil {
-				msg = "🌦🌦🌦 Expected rain from " + forecast.Get("datetime").String()
+				msg = "Expected rain from " + forecast.Get("datetime").String() + " 🌦🌦🌦"
 			} else {
-				msg = "🌦🌦🌦 Expected rain " + humanize.Time(rain)
+				msg = "Expected rain " + humanize.Time(rain) + " 🌦🌦🌦"
 			}
 			break
 		}

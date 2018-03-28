@@ -22,13 +22,15 @@ func Search(query string, nsfw bool) (string, bool) {
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
-	resp, err := client.Do(req)
+	res, err := client.Do(req)
 
 	if err != nil {
 		return "", false
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 
 	if err != nil {
 		return "", false
