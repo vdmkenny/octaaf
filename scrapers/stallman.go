@@ -3,6 +3,7 @@ package scrapers
 import (
 	"errors"
 	"math/rand"
+	"net/http"
 	"path"
 	"time"
 
@@ -13,7 +14,15 @@ import (
 func GetStallman() ([]byte, error) {
 	var url = "https://stallman.org/photos/rms-working/"
 
-	doc, err := goquery.NewDocument(url)
+	res, err := http.Get(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 
 	if err != nil {
 		return nil, err

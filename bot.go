@@ -56,13 +56,6 @@ func initBot() {
 	}
 }
 
-func reply(message *tgbotapi.Message, text string) {
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	msg.ReplyToMessageID = message.MessageID
-	msg.ParseMode = "markdown"
-	Octaaf.Send(msg)
-}
-
 func handle(message *tgbotapi.Message) {
 	if message.Chat.ID == KaliID {
 
@@ -128,4 +121,11 @@ func sendGlobal(message string) {
 	if err != nil {
 		log.Printf("Error while sending '%s': %s", message, err)
 	}
+}
+
+func reply(message *tgbotapi.Message, text string) {
+	msg := tgbotapi.NewMessage(message.Chat.ID, text)
+	msg.ReplyToMessageID = message.MessageID
+	msg.ParseMode = "markdown"
+	Octaaf.Send(msg)
 }

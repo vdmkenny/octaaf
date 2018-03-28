@@ -16,6 +16,7 @@ type Quote struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 	Quote     string    `json:"quote" db:"quote"`
 	UserID    int       `json:"user_id" db:"user_id"`
+	ChatID    int64     `json:"chat_id" db:"chat_id"`
 }
 
 // String is not required by pop and may be deleted

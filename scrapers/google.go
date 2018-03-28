@@ -35,13 +35,15 @@ func GetImages(query string, safe bool) ([]string, error) {
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36")
-	resp, err := client.Do(req)
+	res, err := client.Do(req)
 
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 
 	if err != nil {
 		return nil, err
@@ -63,8 +65,20 @@ func GetImages(query string, safe bool) ([]string, error) {
 
 // GetLocation returns a location based on the google maps API
 func GetLocation(query string) (Location, bool) {
-	resp, _ := http.Get("https://maps.google.com/maps/api/geocode/json?address=" + query + "&key=" + os.Getenv("GOOGLE_API_KEY"))
-	body, _ := ioutil.ReadAll(resp.Body)
+	res, err := http.Get("https://maps.google.com/maps/api/geocode/json?address=" + query + "&key=" + os.Getenv("GOOGLE_API_KEY"))
+
+	if err != nil {
+		return Location{0, 0}, false
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return Location{0, 0}, false
+	}
+
+	defer res.Body.Close()
+
 	json := string(body)
 
 	if !gjson.Get(json, "results.0.geometry.location").Exists() {

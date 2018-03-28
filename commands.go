@@ -273,10 +273,6 @@ func xkcd(message *tgbotapi.Message) {
 }
 
 func quote(message *tgbotapi.Message) {
-	if message.Chat.ID != KaliID {
-		reply(message, "You are not allowed!!")
-	}
-
 	// Fetch a random quote
 	if message.ReplyToMessage == nil {
 		quote := models.Quote{}
@@ -298,7 +294,10 @@ func quote(message *tgbotapi.Message) {
 		return
 	}
 
-	err := DB.Save(&models.Quote{Quote: message.ReplyToMessage.Text, UserID: message.ReplyToMessage.From.ID})
+	err := DB.Save(&models.Quote{
+		Quote:  message.ReplyToMessage.Text,
+		UserID: message.ReplyToMessage.From.ID,
+		ChatID: message.ForwardFromChat.ID})
 
 	if err != nil {
 		log.Printf("Quote error: %v", err)

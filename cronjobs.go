@@ -17,14 +17,14 @@ func initCrons() {
 func setKaliCount() {
 	lastCount := models.MessageCount{}
 
-	err := DB.Last(&lastCount)
+	err := DB.Order("created_at desc").Limit(1).First(&lastCount)
 
 	count := models.MessageCount{
 		Count: KaliCount,
 		Diff:  0,
 	}
 
-	if err == nil {
+	if err == nil && lastCount.Count > 0 {
 		count.Diff = (KaliCount - lastCount.Count)
 	}
 
