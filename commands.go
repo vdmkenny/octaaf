@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/o1egl/govatar"
 	"github.com/tidwall/gjson"
 	"gopkg.in/telegram-bot-api.v4"
@@ -310,4 +311,49 @@ func quote(message *tgbotapi.Message) {
 	}
 
 	reply(message, "Quote successfully saved!")
+}
+
+func nextLaunch(message *tgbotapi.Message) {
+	res, err := http.Get("https://launchlibrary.net/1.3/launch?next=5&mode=verbose")
+
+	if err != nil {
+		reply(message, "Unable to fetch launch data")
+		return
+	}
+
+	defer res.Body.Close()
+
+	launchJSON, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		reply(message, "Unable to fetch launch data")
+		return
+	}
+
+	launches := gjson.Get(string(launchJSON), "launches").Array()
+
+	var msg = "*Next 5 launches:*"
+
+	layout := "January 2, 2006 15:04:05 MST"
+
+	for index, launch := range launches {
+		whenStr := launch.Get("net").String()
+		when, err := time.Parse(layout, whenStr)
+
+		msg += fmt.Sprintf("\n*%v*: %v", index+1, launch.Get("name").String())
+
+		if err != nil {
+			msg += fmt.Sprintf("\n    _%v_", whenStr)
+		} else {
+			msg += fmt.Sprintf("\n    _%v_", humanize.Time(when))
+		}
+
+		vods := launch.Get("vidURLs").Array()
+
+		if len(vods) > 0 {
+			msg += fmt.Sprintf("\n    %v", vods[0])
+		}
+	}
+
+	reply(message, msg)
 }

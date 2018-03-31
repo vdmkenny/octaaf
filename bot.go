@@ -99,6 +99,8 @@ func handle(message *tgbotapi.Message) {
 			xkcd(message)
 		case "quote":
 			quote(message)
+		case "next_launch":
+			nextLaunch(message)
 		}
 	}
 
