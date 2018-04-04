@@ -273,6 +273,12 @@ func xkcd(message *tgbotapi.Message) {
 	Octaaf.Send(msg)
 }
 
+func doubt(message *tgbotapi.Message) {
+	msg := tgbotapi.NewPhotoUpload(message.Chat.ID, "assets/doubt.jpg")
+	msg.ReplyToMessageID = message.MessageID
+	Octaaf.Send(msg)
+}
+
 func quote(message *tgbotapi.Message) {
 	// Fetch a random quote
 	if message.ReplyToMessage == nil {

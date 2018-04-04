@@ -101,6 +101,8 @@ func handle(message *tgbotapi.Message) {
 			quote(message)
 		case "next_launch":
 			nextLaunch(message)
+		case "doubt":
+			doubt(message)
 		}
 	}
 
