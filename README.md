@@ -8,6 +8,7 @@ A telegram bot written in Go
 * /bodegem - A place that is real and exists
 * /bol - Help someone out by subscribing them to the bol.com mailing lists!
 * /count - Get your current message count
+* /doubt - When in doubt...
 * /img - Search possible NSFW images
 * /img_sfw - Search possible SFW images
 * /m8ball - Let fate decide your future
