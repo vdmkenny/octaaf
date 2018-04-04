@@ -38,7 +38,7 @@ pipeline {
 
         stage('Deploy') {
             when {
-                expression { return ${env.GIT_BRANCH} == 'master' }
+                branch 'master'
             }
             steps {
                  sh "ssh root@${REPO_SERVER} 'yum makecache; yum update octaaf'"
