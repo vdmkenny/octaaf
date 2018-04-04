@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        REPO_SERVER = 'repo.youkebox.be'
-        REPO_PATH   = "/var/vhosts/repo/${env.GIT_BRANCH}"
-        NAME        = 'octaaf'
-        VERSION     = '0.1.0'
-        DESCRIPTION = 'A Go Telegram bot'
-        ARCH        = 'x86_64'
+        REPO_SERVER    = 'repo.youkebox.be'
+        REPO_PATH      = "/var/vhosts/repo/${env.GIT_BRANCH}"
+        NAME           = 'octaaf'
+        OCTAAF_VERSION = '0.1.1'
+        DESCRIPTION    = 'A Go Telegram bot'
+        ARCH           = 'x86_64'
     }
 
     stages {
@@ -38,10 +38,11 @@ pipeline {
 
         stage('Deploy') {
             when {
-                expression { return GIT_BRANCH == 'origin/master' }
+                expression { return ${env.GIT_BRANCH} == 'master' }
             }
             steps {
                  sh "ssh root@${REPO_SERVER} 'yum makecache; yum update octaaf'"
+                 sh "ssh root@${REPO_SERVER} 'systemctl restart octaaf'"
             }
         }
     }
