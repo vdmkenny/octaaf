@@ -10,7 +10,7 @@ srcdir = .
 
 NAME = octaaf
 DESCRIPTION = A Go Telegram bot
-VERSION = 0.1.0
+VERSION = ${OCTAAF_VERSION}
 ARCH = x86_64
 
 all: compile
