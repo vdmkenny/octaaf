@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/araddon/dateparse"
   packages = ["."]
-  revision = "1d3842569f46602b6885966f0b025c0a3d0d9442"
+  revision = "4b079c6fdd8d7d3e224357566f278da3c159f441"
 
 [[projects]]
   branch = "master"
@@ -29,7 +29,7 @@
   branch = "master"
   name = "github.com/dustin/go-humanize"
   packages = ["."]
-  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
+  revision = "02af3965c54e8cacf948b97fef38925c4120652c"
 
 [[projects]]
   name = "github.com/fatih/color"
@@ -52,8 +52,8 @@
 [[projects]]
   name = "github.com/gobuffalo/packr"
   packages = ["."]
-  revision = "3402a167bccf1bdd5c93ca820be9f27bba46261e"
-  version = "v1.10.7"
+  revision = "7f4074995d431987caaa35088199f13c44b24440"
+  version = "v1.11.0"
 
 [[projects]]
   name = "github.com/gobuffalo/pop"
@@ -62,10 +62,11 @@
     "associations",
     "columns",
     "fizz",
-    "fizz/translators"
+    "fizz/translators",
+    "nulls"
   ]
-  revision = "d11f9179130af452f496f91138d120566ae40bed"
-  version = "v4.3.0"
+  revision = "7e384f31116dafb43de7ff1ab5565430f9903ba0"
+  version = "v4.5.5"
 
 [[projects]]
   name = "github.com/gobuffalo/uuid"
@@ -95,7 +96,7 @@
     ".",
     "reflectx"
   ]
-  revision = "cf35089a197953c69420c8d0cecda90809764b1d"
+  revision = "2aeb6a910c2b94f2d5eb53d9895d80e27264ec41"
 
 [[projects]]
   name = "github.com/joho/godotenv"
@@ -126,7 +127,7 @@
   branch = "master"
   name = "github.com/markbates/inflect"
   packages = ["."]
-  revision = "b5c853d089b86134926274bc7a98496fee5e1d6b"
+  revision = "fbc6b23ce49e2578f572d2e72bb72fa03c7145de"
 
 [[projects]]
   name = "github.com/mattn/anko"
@@ -136,8 +137,8 @@
     "parser",
     "vm"
   ]
-  revision = "f4b54922efdd844c58a93f8faca1fe0c62ca44c3"
-  version = "v0.0.2"
+  revision = "4e3cdcf522140b26466698841bfdc3227c898043"
+  version = "v0.0.3"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -204,7 +205,7 @@
     "html",
     "html/atom"
   ]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
@@ -216,7 +217,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "13d03a9a82fba647c21a0ef8fba44a795d0f0835"
+  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
 
 [[projects]]
   name = "gopkg.in/telegram-bot-api.v4"
@@ -227,8 +228,8 @@
 [[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "86f5ed62f8a0ee96bd888d2efdfd6d4fb100a4eb"
-  version = "v2.2.0"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"

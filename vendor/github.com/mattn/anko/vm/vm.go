@@ -35,14 +35,14 @@ var (
 	zeroValue                 = reflect.Value{}
 	reflectValueErrorNilValue = reflect.ValueOf(reflect.New(errorType).Elem())
 
-	// BreakError when there is an unexpected break statement
-	BreakError = errors.New("Unexpected break statement")
-	// ContinueError when there is an unexpected continue statement
-	ContinueError = errors.New("Unexpected continue statement")
-	// ReturnError when there is an unexpected return statement
-	ReturnError = errors.New("Unexpected return statement")
-	// InterruptError when execution has been interrupted
-	InterruptError = errors.New("Execution interrupted")
+	// ErrBreak when there is an unexpected break statement
+	ErrBreak = errors.New("Unexpected break statement")
+	// ErrContinue when there is an unexpected continue statement
+	ErrContinue = errors.New("Unexpected continue statement")
+	// ErrReturn when there is an unexpected return statement
+	ErrReturn = errors.New("Unexpected return statement")
+	// ErrInterrupt when execution has been interrupted
+	ErrInterrupt = errors.New("Execution interrupted")
 )
 
 // newStringError makes error interface with message.
@@ -64,7 +64,7 @@ func newError(pos ast.Pos, err error) error {
 	if err == nil {
 		return nil
 	}
-	if err == BreakError || err == ContinueError || err == ReturnError {
+	if err == ErrBreak || err == ErrContinue || err == ErrReturn {
 		return err
 	}
 	if pe, ok := err.(*parser.Error); ok {
@@ -85,7 +85,7 @@ func (e *Error) Error() string {
 // This includes all parent & child environments.
 // Note that the execution is not instantly aborted: after a call to Interrupt,
 // the current running statement will finish, but the next statement will not run,
-// and instead will return a nilValue and an InterruptError.
+// and instead will return a nilValue and an ErrInterrupt.
 func Interrupt(env *Env) {
 	env.Lock()
 	*(env.interrupt) = true
@@ -177,9 +177,7 @@ func equal(lhsV, rhsV reflect.Value) bool {
 	}
 
 	if isNum(lhsV) && isNum(rhsV) {
-		if rhsV.Type().ConvertibleTo(lhsV.Type()) {
-			rhsV = rhsV.Convert(lhsV.Type())
-		}
+		return fmt.Sprintf("%v", lhsV) == fmt.Sprintf("%v", rhsV)
 	}
 
 	// Try to compare bools to strings and numbers
@@ -222,12 +220,6 @@ func getMapIndex(key reflect.Value, aMap reflect.Value) reflect.Value {
 
 	if value.IsValid() && value.CanInterface() && aMap.Type().Elem() == interfaceType && !value.IsNil() {
 		value = reflect.ValueOf(value.Interface())
-	}
-
-	// Note if the map is of reflect.Value, it will incorrectly return nil when zero value
-	// Unware of any other way for this to be done to correct that
-	if value == zeroValue {
-		return nilValue
 	}
 
 	return value
@@ -350,10 +342,9 @@ func makeValue(t reflect.Type) (reflect.Value, error) {
 			if err != nil {
 				return nilValue, err
 			}
-			if !structV.Field(i).CanSet() {
-				return nilValue, fmt.Errorf("struct member '" + t.Field(i).Name + "' cannot be assigned")
+			if structV.Field(i).CanSet() {
+				structV.Field(i).Set(v)
 			}
-			structV.Field(i).Set(v)
 		}
 		return structV, nil
 	}

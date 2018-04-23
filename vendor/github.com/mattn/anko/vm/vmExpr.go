@@ -223,16 +223,13 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 		if v.Kind() == reflect.Interface {
 			v = v.Elem()
 		}
-		if v.Kind() == reflect.Slice {
-			v = v.Index(0)
-		}
 		if !v.IsValid() {
 			return nilValue, newStringError(e, "type invalid does not support member operation")
 		}
-		if v.IsValid() && v.CanInterface() {
+		if v.CanInterface() {
 			if vme, ok := v.Interface().(*Env); ok {
 				m, err := vme.get(e.Name)
-				if !m.IsValid() || err != nil {
+				if err != nil || !m.IsValid() {
 					return nilValue, newStringError(e, fmt.Sprintf("Invalid operation '%s'", e.Name))
 				}
 				return m, nil
@@ -256,6 +253,10 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 			return v.FieldByIndex(field.Index), nil
 		case reflect.Map:
 			v = getMapIndex(reflect.ValueOf(e.Name), v)
+			// Note if the map is of reflect.Value, it will incorrectly return nil when zero value
+			if v == zeroValue {
+				return nilValue, nil
+			}
 			return v, nil
 		default:
 			return nilValue, newStringError(e, "type "+v.Kind().String()+" does not support member operation")
@@ -285,11 +286,8 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 			if v.Kind() != reflect.String {
 				return v.Index(ii), nil
 			}
-			v = v.Index(ii)
-			if v.Type().ConvertibleTo(stringType) {
-				return v.Convert(stringType), nil
-			}
-			return nilValue, newStringError(e, "invalid type conversion")
+			// String
+			return v.Index(ii).Convert(stringType), nil
 		case reflect.Map:
 			v = getMapIndex(i, v)
 			return v, nil
@@ -368,10 +366,8 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 				default:
 					v = reflect.ValueOf(toInt64(v) + 1)
 				}
-				err = env.setValue(alhs.Lit, v)
-				if err != nil {
-					return nilValue, newError(e, err)
-				}
+				// not checking err because checked above in get
+				env.setValue(alhs.Lit, v)
 				return v, nil
 			}
 		case "--":
@@ -394,10 +390,8 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 				default:
 					v = reflect.ValueOf(toInt64(v) - 1)
 				}
-				err = env.setValue(alhs.Lit, v)
-				if err != nil {
-					return nilValue, newError(e, err)
-				}
+				// not checking err because checked above in get
+				env.setValue(alhs.Lit, v)
 				return v, nil
 			}
 		}
@@ -414,16 +408,6 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 			v = v.Elem()
 		}
 		return invokeLetExpr(e.Lhs, v, env)
-
-	case *ast.LetExpr:
-		rv, err := invokeExpr(e.Rhs, env)
-		if err != nil {
-			return nilValue, newError(e.Rhs, err)
-		}
-		if rv.Kind() == reflect.Interface {
-			rv = rv.Elem()
-		}
-		return invokeLetExpr(e.Lhs, rv, env)
 
 	case *ast.LetsExpr:
 		var err error
@@ -697,7 +681,16 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 				return nilValue, newError(e.Lhs, err)
 			}
 			if lhs.Kind() == reflect.Chan {
-				lhs.Send(rhs)
+				chanType := lhs.Type().Elem()
+				if chanType == interfaceType || (rhs.IsValid() && rhs.Type() == chanType) {
+					lhs.Send(rhs)
+				} else {
+					rhs, err = convertReflectValueToType(rhs, chanType)
+					if err != nil {
+						return nilValue, newStringError(e, "cannot use type "+rhs.Type().String()+" as type "+chanType.String()+" to send to chan")
+					}
+					lhs.Send(rhs)
+				}
 				return nilValue, nil
 			} else if rhs.Kind() == reflect.Chan {
 				rv, ok := rhs.Recv()
@@ -729,6 +722,9 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 			return nilValue, newError(e.KeyExpr, err)
 		}
 
+		if mapExpr.Kind() == reflect.Interface && !mapExpr.IsNil() {
+			mapExpr = mapExpr.Elem()
+		}
 		if mapExpr.Kind() != reflect.Map {
 			return nilValue, newStringError(e, "first argument to delete must be map; have "+mapExpr.Kind().String())
 		}
@@ -744,6 +740,28 @@ func invokeExpr(expr ast.Expr, env *Env) (reflect.Value, error) {
 
 		mapExpr.SetMapIndex(keyExpr, reflect.Value{})
 		return nilValue, nil
+
+	case *ast.IncludeExpr:
+		itemExpr, err := invokeExpr(e.ItemExpr, env)
+		if err != nil {
+			return nilValue, newError(e.ItemExpr, err)
+		}
+		listExpr, err := invokeExpr(&e.ListExpr, env)
+		if err != nil {
+			return nilValue, newError(&e.ListExpr, err)
+		}
+
+		if listExpr.Kind() != reflect.Slice && listExpr.Kind() != reflect.Array {
+			return nilValue, newStringError(e, "second argument must be slice or array; but have "+listExpr.Kind().String())
+		}
+
+		for i := 0; i < listExpr.Len(); i++ {
+			// todo: https://github.com/mattn/anko/issues/192
+			if equal(itemExpr, listExpr.Index(i)) {
+				return trueValue, nil
+			}
+		}
+		return falseValue, nil
 
 	default:
 		return nilValue, newStringError(e, "Unknown expression")

@@ -47,7 +47,7 @@ func funcExpr(funcExpr *ast.FuncExpr, env *Env) (reflect.Value, error) {
 		}
 
 		rv, err = run(funcExpr.Stmts, newEnv)
-		if err != nil && err != ReturnError {
+		if err != nil && err != ErrReturn {
 			err = newError(funcExpr, err)
 			return []reflect.Value{reflect.ValueOf(nilValue), reflect.ValueOf(reflect.ValueOf(newError(funcExpr, err)))}
 		}
@@ -148,7 +148,7 @@ func callExpr(callExpr *ast.CallExpr, env *Env) (rv reflect.Value, err error) {
 		for i, expr := range callExpr.SubExprs {
 			if addrExpr, ok := expr.(*ast.AddrExpr); ok {
 				if identExpr, ok := addrExpr.Expr.(*ast.IdentExpr); ok {
-					invokeLetExpr(identExpr, args[i].Elem().Elem(), env)
+					invokeLetExpr(identExpr, args[i].Elem(), env)
 				}
 			}
 		}
@@ -290,7 +290,10 @@ func makeCallArgs(rt reflect.Type, isRunVmFunction bool, callExpr *ast.CallExpr,
 
 		// rt.IsVariadic() && callExpr.VarArg
 
-		sliceType := rt.In(numIn - 1).Elem()
+		sliceType := rt.In(numIn - 1)
+		if sliceType.Kind() == reflect.Interface && !arg.IsNil() {
+			sliceType = sliceType.Elem()
+		}
 		arg, err = invokeExpr(callExpr.SubExprs[indexExpr], env)
 		if err != nil {
 			return []reflect.Value{}, false, newError(callExpr.SubExprs[indexExpr], err)

@@ -45,36 +45,35 @@ const (
 	dateAlphaWsAlphaYearmaybe
 	dateWeekdayComma
 	dateWeekdayAbbrevComma
-	//dateWeekdayAbbrevCommaDash
 )
 const (
 	// Time state
-	timeIgnore timeState = iota
+	timeIgnore timeState = iota // 0
 	timeStart
 	timeWs
 	timeWsAlpha
 	timeWsAlphaWs
-	timeWsAlphaZoneOffset
+	timeWsAlphaZoneOffset // 5
 	timeWsAlphaZoneOffsetWs
 	timeWsAlphaZoneOffsetWsYear
 	timeWsAlphaZoneOffsetWsExtra
 	timeWsAMPMMaybe
-	timeWsAMPM
+	timeWsAMPM // 10
 	timeWsOffset
-	timeWsOffsetWs
+	timeWsOffsetWs // 12
 	timeWsOffsetColonAlpha
 	timeWsOffsetColon
-	timeWsYear
+	timeWsYear // 15
 	timeOffset
 	timeOffsetColon
 	timeAlpha
 	timePeriod
-	timePeriodOffset
+	timePeriodOffset // 20
 	timePeriodOffsetColon
 	timePeriodOffsetColonWs
 	timePeriodWs
 	timePeriodWsAlpha
-	timePeriodWsOffset
+	timePeriodWsOffset // 25
 	timePeriodWsOffsetWs
 	timePeriodWsOffsetWsAlpha
 	timePeriodWsOffsetColon
@@ -356,6 +355,7 @@ iterRunes:
 			i += (bytesConsumed - 1)
 		}
 
+		//gou.Debugf("i=%d r=%s state=%d   %s", i, string(r), p.stateDate, datestr)
 		switch p.stateDate {
 		case dateStart:
 			if unicode.IsDigit(r) {
@@ -421,6 +421,8 @@ iterRunes:
 			case '年':
 				// Chinese Year
 				p.stateDate = dateDigitChineseYear
+			case ',':
+				return nil, fmt.Errorf("Unrecognized format %q", datestr)
 			default:
 				//if unicode.IsDigit(r) {
 				continue
@@ -821,7 +823,7 @@ iterRunes:
 		for ; i < len(datestr); i++ {
 			r := rune(datestr[i])
 
-			//gou.Debugf("%d %s iterTimeRunes  %s %s", i, string(r), p.ds(), p.ts())
+			//gou.Debugf("%d %s %d iterTimeRunes  %s %s", i, string(r), p.stateTime, p.ds(), p.ts())
 
 			switch p.stateTime {
 			case timeStart:
@@ -833,6 +835,7 @@ iterRunes:
 				//   05:24:37 PM
 				//   06:20:00 UTC
 				//   00:12:00 +0000 UTC
+				//   22:18:00 +0000 UTC m=+0.000000001
 				//   15:04:05 -0700
 				//   15:04:05 -07:00
 				//   15:04:05 2008
@@ -854,6 +857,7 @@ iterRunes:
 				//       00:00:00.000 +0000
 				//     timePeriodWsOffsetAlpha
 				//       00:07:31.945167 +0000 UTC
+				//       22:18:00.001 +0000 UTC m=+0.000000001
 				//       00:00:00.000 +0000 UTC
 				//     timePeriodWsAlpha
 				//       06:20:00.000 UTC
@@ -871,7 +875,12 @@ iterRunes:
 				case '-', '+':
 					//   03:21:51+00:00
 					p.stateTime = timeOffset
-					p.seclen = i - p.seci
+					if p.seci == 0 {
+						// 22:18+0530
+						p.minlen = i - p.mini
+					} else {
+						p.seclen = i - p.seci
+					}
 					p.offseti = i
 				case '.':
 					p.stateTime = timePeriod
@@ -1049,16 +1058,27 @@ iterRunes:
 			case timeWsOffsetWs:
 				// 17:57:51 -0700 2009
 				// 00:12:00 +0000 UTC
-				if unicode.IsDigit(r) {
+				// 22:18:00.001 +0000 UTC m=+0.000000001
+
+				switch {
+				case unicode.IsDigit(r):
 					p.yearlen = i - p.yeari + 1
 					if p.yearlen == 4 {
 						p.setYear()
 					}
-				} else if unicode.IsLetter(r) {
+				case unicode.IsLetter(r):
 					if p.tzi == 0 {
 						p.tzi = i
 					}
+				case r == '=':
+					// eff you golang
+					if datestr[i-1] == 'm' {
+						p.extra = i - 2
+						p.trimExtra()
+						break
+					}
 				}
+
 			case timeWsOffsetColon:
 				// timeWsOffsetColon
 				//   15:04:05 -07:00
@@ -1093,6 +1113,7 @@ iterRunes:
 				//     timePeriodWsOffsetAlpha
 				//       00:07:31.945167 +0000 UTC
 				//       00:00:00.000 +0000 UTC
+				//       22:18:00.001 +0000 UTC m=+0.000000001
 				//     timePeriodWsAlpha
 				//       06:20:00.000 UTC
 				switch r {
@@ -1170,6 +1191,7 @@ iterRunes:
 				//   timePeriodWsOffsetAlpha
 				//     00:07:31.945167 +0000 UTC
 				//     00:00:00.000 +0000 UTC
+				//     03:02:00.001 +0300 MSK m=+0.000000001
 				//   timePeriodWsOffsetColon
 				//     13:31:51.999 -07:00 MST
 				//   timePeriodWsAlpha
@@ -1183,9 +1205,17 @@ iterRunes:
 					if unicode.IsLetter(r) {
 						// 00:07:31.945167 +0000 UTC
 						// 00:00:00.000 +0000 UTC
+						// 03:02:00.001 +0300 MSK m=+0.000000001
 						p.stateTime = timePeriodWsOffsetWsAlpha
-						break iterTimeRunes
 					}
+				}
+			case timePeriodWsOffsetWsAlpha:
+				// 03:02:00.001 +0300 MSK m=+0.000000001
+				// eff you golang
+				if r == '=' && datestr[i-1] == 'm' {
+					p.extra = i - 2
+					p.trimExtra()
+					break
 				}
 
 			case timePeriodWsOffsetColon:
@@ -1290,6 +1320,8 @@ iterRunes:
 		} else if len(datestr) == len("2014") {
 			p.format = []byte("2006")
 			return p, nil
+		} else if len(datestr) < 4 {
+			return nil, fmt.Errorf("unrecognized format, to short %v", datestr)
 		}
 		if t.IsZero() {
 			if secs, err := strconv.ParseInt(datestr, 10, 64); err == nil {
