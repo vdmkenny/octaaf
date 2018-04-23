@@ -8,20 +8,15 @@ SHELL = /bin/sh
 
 srcdir = .
 
-NAME = octaaf
+NAME 		= octaaf
 DESCRIPTION = A Go Telegram bot
-VERSION = ${OCTAAF_VERSION}
-ARCH = x86_64
+VERSION 	= ${OCTAAF_VERSION}
+ARCH 		= x86_64
 
-all: compile
+all: build
 
-compile:
-	docker build -t octaaf .
-	docker run --rm \
-		-v "$(shell pwd)":/go/src/octaaf \
-		-w /go/src/octaaf octaaf:latest \
-		/bin/bash -c "dep ensure && go build -v"
-	strip octaaf
+build:
+	docker run --rm -v "$$PWD":/go/src/octaaf -w /go/src/octaaf golang:1.10 go build
 
 TMPDIR := $(shell mktemp -d)
 TARGET := $(TMPDIR)/opt/octaaf
@@ -32,6 +27,7 @@ package:
 	mkdir -p $(CONFIG)
 	mkdir -p $(SYSTEM)
 
+	strip octaaf
 	cp ./octaaf $(TARGET)/
 	cp ./octaaf.service $(SYSTEM)/octaaf.service
 	cp ./config/.env.dist $(CONFIG)/.env

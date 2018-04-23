@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     environment {
@@ -11,14 +12,9 @@ pipeline {
     }
 
     stages {
-       stage('Build') {
+        stage('Build') {
             steps {
-                sh 'make'
-            }
-            post {
-                always {
-                    sh 'sudo rm -rf vendor'
-                }
+                sh 'make build'
             }
         }
 
@@ -29,6 +25,9 @@ pipeline {
         }
 
         stage('Upload') {
+            when {
+                expression { BRANCH_NAME ==~ /(master|development)/ }
+            }
             steps {
                 sh "scp octaaf-*.rpm root@${REPO_SERVER}:${REPO_PATH}/packages/"
                 sh "ssh root@${REPO_SERVER} 'cd ${REPO_PATH}/packages/ && rm -rf \$(ls ${REPO_PATH}/packages/ -1t | grep ${NAME}-${VERSION} | tail -n +4)'"
@@ -37,6 +36,7 @@ pipeline {
         }
 
         stage('Deploy') {
+            agent any
             when {
                 branch 'master'
             }
