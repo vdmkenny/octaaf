@@ -20,3 +20,6 @@ migrations/schema.sql
 
 # Octaaf binary
 [oO]ctaaf
+
+# Dolphin
+**/*.directory
