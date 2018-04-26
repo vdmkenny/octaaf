@@ -26,7 +26,10 @@ pipeline {
 
         stage('Upload') {
             when {
-                expression { BRANCH_NAME ==~ /(master|development)/ }
+                allOf {
+                    expression { BRANCH_NAME ==~ /(master|development)/ }
+                    expression { env.CHANGE_ID == null  }
+                }
             }
             steps {
                 sh "scp octaaf-*.rpm root@${REPO_SERVER}:${REPO_PATH}/packages/"
@@ -38,8 +41,9 @@ pipeline {
         stage('Deploy') {
             agent any
             when {
-                expression {
-                    BRANCH_NAME == "master" && ! CHANGE_ID
+                allOf {
+                    expression { BRANCH_NAME == "master" }
+                    expression { env.CHANGE_ID == null  }
                 }
             }
             steps {
