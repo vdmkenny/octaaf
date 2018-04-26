@@ -18,9 +18,8 @@ config/.env
 config/database.yml
 migrations/schema.sql
 
-# Vendor
-vendor
-_vendor-*
-
 # Octaaf binary
 [oO]ctaaf
+
+# Dolphin
+**/*.directory
