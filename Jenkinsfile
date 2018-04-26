@@ -38,7 +38,9 @@ pipeline {
         stage('Deploy') {
             agent any
             when {
-                branch 'master'
+                expression {
+                    BRANCH_NAME == "master" && ! CHANGE_ID
+                }
             }
             steps {
                  sh "ssh root@${REPO_SERVER} 'yum makecache; yum update octaaf -y'"

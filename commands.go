@@ -108,8 +108,17 @@ func where(message *tgbotapi.Message) {
 
 func what(message *tgbotapi.Message) {
 	query := message.CommandArguments()
-	resp, _ := http.Get(fmt.Sprintf("https://api.duckduckgo.com/?q=%v&format=json&no_html=1&skip_disambig=1", query))
-	body, _ := ioutil.ReadAll(resp.Body)
+	resp, err := http.Get(fmt.Sprintf("https://api.duckduckgo.com/?q=%v&format=json&no_html=1&skip_disambig=1", query))
+	if err != nil {
+		reply(message, "Just what is this? 🤔")
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		reply(message, "Just what is this? 🤔")
+		return
+	}
 
 	result := gjson.Get(string(body), "AbstractText").String()
 
