@@ -291,20 +291,6 @@ func doubt(message *tgbotapi.Message) {
 func quote(message *tgbotapi.Message) {
 	// Fetch a random quote
 	if message.ReplyToMessage == nil {
-		config := tgbotapi.ChatConfigWithUser{
-			message.Chat.ID,
-			"",
-			message.From.ID}
-
-		user, userErr := Octaaf.GetChatMember(config)
-
-		// if err != nil {
-		// 	reply(message, "Error")
-		// 	return
-		// }
-
-		// reply(message, fmt.Sprintf("@%v", user.User.UserName), false)
-
 		quote := models.Quote{}
 
 		err := DB.Where("chat_id = ?", message.Chat.ID).Order("random()").Limit(1).First(&quote)
@@ -319,12 +305,18 @@ func quote(message *tgbotapi.Message) {
 			return
 		}
 
+		config := tgbotapi.ChatConfigWithUser{
+			ChatID:             message.Chat.ID,
+			SuperGroupUsername: "",
+			UserID:             quote.UserID}
+
+		user, userErr := Octaaf.GetChatMember(config)
+
 		if userErr != nil {
 			reply(message, quote.Quote)
 		} else {
 			msg := fmt.Sprintf("\"%v\"", quote.Quote)
 			msg += fmt.Sprintf("\n    ~@%v", user.User.UserName)
-			log.Printf(msg)
 			reply(message, msg, false)
 		}
 
