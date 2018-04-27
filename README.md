@@ -11,6 +11,7 @@ A telegram bot written in Go
 * /doubt - When in doubt...
 * /img - Search possible NSFW images
 * /img_sfw - Search possible SFW images
+* /issues - Show a list of open issues
 * /m8ball - Let fate decide your future
 * /next_launch - Show the next 5 rocket launches
 * /quote - Get or store random kali quotes
