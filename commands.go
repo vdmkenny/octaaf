@@ -291,6 +291,20 @@ func doubt(message *tgbotapi.Message) {
 func quote(message *tgbotapi.Message) {
 	// Fetch a random quote
 	if message.ReplyToMessage == nil {
+		config := tgbotapi.ChatConfigWithUser{
+			message.Chat.ID,
+			"",
+			message.From.ID}
+
+		user, userErr := Octaaf.GetChatMember(config)
+
+		// if err != nil {
+		// 	reply(message, "Error")
+		// 	return
+		// }
+
+		// reply(message, fmt.Sprintf("@%v", user.User.UserName), false)
+
 		quote := models.Quote{}
 
 		err := DB.Where("chat_id = ?", message.Chat.ID).Order("random()").Limit(1).First(&quote)
@@ -305,7 +319,15 @@ func quote(message *tgbotapi.Message) {
 			return
 		}
 
-		reply(message, quote.Quote)
+		if userErr != nil {
+			reply(message, quote.Quote)
+		} else {
+			msg := fmt.Sprintf("\"%v\"", quote.Quote)
+			msg += fmt.Sprintf("\n    ~@%v", user.User.UserName)
+			log.Printf(msg)
+			reply(message, msg, false)
+		}
+
 		return
 	}
 
@@ -369,6 +391,40 @@ func nextLaunch(message *tgbotapi.Message) {
 			msg += fmt.Sprintf("\n    %v", vods[0])
 		}
 	}
+
+	reply(message, msg)
+}
+
+func issues(message *tgbotapi.Message) {
+	res, err := http.Get("https://api.github.com/repos/bartwillems/Octaaf/issues?state=open")
+
+	if err != nil {
+		reply(message, "Unable to fetch open issues")
+		return
+	}
+
+	defer res.Body.Close()
+
+	issuesJSON, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		reply(message, "Unable to fetch open issues")
+		return
+	}
+
+	issues := gjson.ParseBytes(issuesJSON)
+
+	var msg = "*Octaaf issues:*"
+
+	var count int
+
+	issues.ForEach(func(key, value gjson.Result) bool {
+		count++
+		msg += fmt.Sprintf("\n*%v: %v*", count, value.Get("title").String())
+		msg += fmt.Sprintf("\n    *url:* _%v_", value.Get("url").String())
+		msg += fmt.Sprintf("\n    *creator:* _%v_", value.Get("user.login").String())
+		return true
+	})
 
 	reply(message, msg)
 }

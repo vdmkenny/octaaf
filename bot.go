@@ -59,14 +59,16 @@ func initBot() {
 func handle(message *tgbotapi.Message) {
 	if message.Chat.ID == KaliID {
 
-		KaliCount = message.MessageID
+		go func() {
+			KaliCount = message.MessageID
 
-		if message.From.ID == ReporterID {
-			if strings.ToLower(message.Text) == "reported" ||
-				(message.Sticker != nil && message.Sticker.FileID == "CAADBAAD5gEAAreTBA3s5qVy8bxHfAI") {
-				DB.Save(&models.Report{})
+			if message.From.ID == ReporterID {
+				if strings.ToLower(message.Text) == "reported" ||
+					(message.Sticker != nil && message.Sticker.FileID == "CAADBAAD5gEAAreTBA3s5qVy8bxHfAI") {
+					DB.Save(&models.Report{})
+				}
 			}
-		}
+		}()
 	}
 
 	if message.IsCommand() {
@@ -103,6 +105,8 @@ func handle(message *tgbotapi.Message) {
 			nextLaunch(message)
 		case "doubt":
 			doubt(message)
+		case "issues":
+			issues(message)
 		}
 	}
 
@@ -127,9 +131,17 @@ func sendGlobal(message string) {
 	}
 }
 
-func reply(message *tgbotapi.Message, text string) {
+func reply(message *tgbotapi.Message, text string, markdown ...bool) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 	msg.ReplyToMessageID = message.MessageID
-	msg.ParseMode = "markdown"
+
+	if len(markdown) > 0 {
+		if markdown[0] {
+			msg.ParseMode = "markdown"
+		}
+	} else {
+		msg.ParseMode = "markdown"
+	}
+
 	Octaaf.Send(msg)
 }
