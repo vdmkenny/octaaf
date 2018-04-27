@@ -65,8 +65,8 @@
     "fizz/translators",
     "nulls"
   ]
-  revision = "7e384f31116dafb43de7ff1ab5565430f9903ba0"
-  version = "v4.5.5"
+  revision = "c67c14d737b88d2ce006c1d2c578289e1a984a82"
+  version = "v4.5.6"
 
 [[projects]]
   name = "github.com/gobuffalo/uuid"
@@ -217,7 +217,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
+  revision = "bb9c189858d91f42db229b04d45a4c3d23a7662a"
 
 [[projects]]
   name = "gopkg.in/telegram-bot-api.v4"
