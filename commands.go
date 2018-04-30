@@ -420,3 +420,25 @@ func issues(message *tgbotapi.Message) {
 
 	reply(message, msg)
 }
+
+func kaliRank(message *tgbotapi.Message) {
+	if message.Chat.ID != KaliID {
+		reply(message, "You are not allowed!")
+		return
+	}
+
+	kaliRank := []models.MessageCount{}
+	err := DB.Order("diff DESC").Limit(5).All(&kaliRank)
+
+	if err != nil {
+		reply(message, "Unable to fetch the kali rankings")
+		return
+	}
+
+	var msg = "*Kali rankings:*"
+	for index, rank := range kaliRank {
+		msg += fmt.Sprintf("\n`#%v:` *%v messages*   _~%v_", index+1, rank.Diff, rank.CreatedAt.Format("Monday, 2 January 2006"))
+	}
+
+	reply(message, msg)
+}
