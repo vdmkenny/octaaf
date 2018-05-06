@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"octaaf/models"
 	"octaaf/scrapers"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -441,4 +442,17 @@ func kaliRank(message *tgbotapi.Message) {
 	}
 
 	reply(message, msg)
+}
+
+func iasip(message *tgbotapi.Message) {
+	server := "159.89.14.97:6969"
+
+	cmd := exec.Command("curl", server)
+	quote, err := cmd.Output()
+	if err != nil {
+		reply(message, "Unable to fetch iasip quote...you goddamn bitch you..")
+		return
+	}
+
+	reply(message, string(quote))
 }
