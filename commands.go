@@ -442,3 +442,23 @@ func kaliRank(message *tgbotapi.Message) {
 
 	reply(message, msg)
 }
+
+func iasip(message *tgbotapi.Message) {
+	server := "http://159.89.14.97:6969"
+
+	res, err := http.Get(server)
+	if err != nil {
+		reply(message, "Unable to fetch iasip quote...you goddamn bitch you..")
+		return
+	}
+
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		reply(message, "Unable to fetch iasip quote...you goddamn bitch you..")
+		return
+	}
+
+	reply(message, string(body))
+}
