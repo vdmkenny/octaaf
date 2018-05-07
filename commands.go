@@ -457,6 +457,5 @@ func iasip(message *tgbotapi.Message) {
 		log.Panic(err)
 	}
 
-	log.Printf(string(body))
 	reply(message, string(body))
 }
