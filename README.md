@@ -24,3 +24,20 @@ A telegram bot written in Go
 * /what - Explains what something is
 * /where - Find places on earth
 * /xkcd - Get a random XKCD comic
+* /iasip - Get a random It's Always Sunny In Philadelphia quote
+
+## Developing
+
+### Requirements
+
+1. a telegram bot account
+    * you can use telegram for this
+1. install postgresql
+    * ```pacman -S postgresql``` (or any other package manager)
+    * ```sudo -u postgres -i```
+    * ```initdb --locale en_US.UTF-8 -E UTF8 -D '/var/lib/postgres/data'```
+    * [Create your first DB user](https://wiki.archlinux.org/index.php/PostgreSQL#Create_your_first_database.2Fuser)
+1. a google api key *(optional)*
+1. ```cp config/.env.dist config/.env```
+1. ```cp config/database.yml.dist config/database.yml```
+1. Enter the correct values in both config files
