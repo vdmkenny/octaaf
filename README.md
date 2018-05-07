@@ -24,6 +24,7 @@ A telegram bot written in Go
 * /what - Explains what something is
 * /where - Find places on earth
 * /xkcd - Get a random XKCD comic
+* /iasip - Get a random It's Always Sunny In Philadelphia quote
 
 ## Developing
 
