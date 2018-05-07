@@ -456,7 +456,8 @@ func iasip(message *tgbotapi.Message) {
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Panic(err)
+		reply(message, "Unable to fetch iasip quote...you goddamn bitch you..")
+		return
 	}
 
 	reply(message, string(body))
