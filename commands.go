@@ -445,7 +445,7 @@ func mcaffee(message *tgbotapi.Message) {
 	currBpi := doc.Find("span#currBpi").First().Text()
 
 	msg += dickBool
-	msg += fmt.Sprintf(" The current bitcoin price index (%s) is %s", percDiff, currBpi)
+	msg += fmt.Sprintf("\nThe current bitcoin price index (%s) is %s", percDiff, currBpi)
 
 	if dickBool == "Yes!" {
 		msg += " below the current price target."
