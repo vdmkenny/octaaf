@@ -53,7 +53,9 @@ pipeline {
        }
        //needed for github
        stage('Last Step') {
-         echo "Done!"
+            steps {
+                sh "echo Done!"
+            }
        }
-    }
+  }
 }
