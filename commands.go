@@ -423,7 +423,7 @@ func issues(message *tgbotapi.Message) {
 func mcaffee(message *tgbotapi.Message) {
 	res, err := http.Get("https://diegorod.github.io/WillMcAfeeEatHisOwnDick/")
 
-	msg += "Will McAffee eat his down dick?"
+	var msg = "Will McAffee eat his down dick?"
 	if err != nil {
 	        msg += "\nI don't know!"
 		reply(message, msg)
