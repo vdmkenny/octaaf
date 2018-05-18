@@ -10,7 +10,7 @@ func initCrons() {
 	gocron.Every(1).Day().At("13:37").Do(sendGlobal, "1337")
 	gocron.Every(1).Day().At("14:14").Do(sendGlobal, "🐔 Daar is hij weer. Het kip. Mooi. \nhttps://youtu.be/r_qOBZcQqWo")
 	gocron.Every(1).Day().At("16:20").Do(sendGlobal, "420")
-	gocron.Every(1).Day().At("00:00").Do(setKaliCount)
+	gocron.Every(1).Day().At("23:59").Do(setKaliCount)
 
 	<-gocron.Start()
 }
