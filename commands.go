@@ -440,9 +440,9 @@ func mcaffee(message *tgbotapi.Message) {
 		return
 	}
 
-	dickBool := doc.Find("#isDickOnTheMenu").String()
-	percDiff := doc.Find("#percDiff").String()
-	currBpi := doc.Find("#currBpi").String()
+	dickBool := doc.Find("#isDickOnTheMenu")
+	percDiff := doc.Find("#percDiff")
+	currBpi := doc.Find("#currBpi")
 
 	msg += dickBool
 	msg += fmt.Sprintf(" The current bitcoin price index (%s) is %s", percDiff, currBpi)
