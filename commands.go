@@ -425,7 +425,7 @@ func mcaffee(message *tgbotapi.Message) {
 
 	var msg = "Will McAffee eat his down dick?"
 	if err != nil {
-	        msg += "\nI don't know!"
+		msg += "\nI don't know!"
 		reply(message, msg)
 		return
 	}
@@ -435,7 +435,7 @@ func mcaffee(message *tgbotapi.Message) {
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 
 	if err != nil {
-	        msg += "\nI don't know!"
+		msg += "\nI don't know!"
 		reply(message, msg)
 		return
 	}
@@ -449,7 +449,7 @@ func mcaffee(message *tgbotapi.Message) {
 
 	if dickBool == "Yes!" {
 		msg += " below the current price target."
-        } else {
+	} else {
 		msg += " above the current price target."
 	}
 
