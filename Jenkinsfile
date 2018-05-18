@@ -51,11 +51,5 @@ pipeline {
                  sh "ssh root@${REPO_SERVER} 'systemctl restart octaaf'"
             }
        }
-       //needed for github
-       stage('Last Step') {
-            steps {
-                sh "echo Done!"
-            }
-       }
-  }
+    }
 }
