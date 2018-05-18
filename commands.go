@@ -432,8 +432,14 @@ func mcaffee(message *tgbotapi.Message) {
 
 	defer res.Body.Close()
 
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
 	msg += res.Find("#isDickOnTheMenu").String()
-	msg += fmt.Sprintf("The current bitcoin price index (", res.Find("#currBpi").String(), ") is ", res.Find("#percDiff").String(), " below the current price target.")
+	msg += fmt.Sprintf("The current bitcoin price index (", doc.Find("#currBpi").String(), ") is ", doc.Find("#percDiff").String(), " below the current price target.")
 
 	reply(message, msg)
 }

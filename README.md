@@ -21,7 +21,7 @@ A telegram bot written in Go
 * /roll - Praise kek
 * /search - Search stuff on DuckDuckGo with safe search on
 * /search_nsfw - Search dirty stuff on DuckDuckGo
-* /stallman - I'd just like to interject for a moment. What you’re referring to as Linux, is in fact, GN/U/Linux, or as I’ve recently taken to calling it, GNU plus Linux.
+* /stallman - I'd just like to interject for a moment. What you’re referring to as Linux, is in fact, GNU/Linux, or as I’ve recently taken to calling it, GNU plus Linux.
 * /weather - Get the weather of a city
 * /what - Explains what something is
 * /where - Find places on earth
